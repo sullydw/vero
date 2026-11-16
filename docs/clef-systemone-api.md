@@ -40,9 +40,37 @@ message names the next requirement (that's how the schema was mapped).
 
 - `questions` must map **ids to objects** (ids are free-form strings: `joy`, `1`, `q1` all fine).
 - `questions` accepts **1–64 entries** — the whole 14-feeling VERO catalog fits in one call.
-- `type=choice` requires `criteria` to be an **object** (not yet exercised — untested).
-- `noul` type: purpose unknown — not yet exercised.
 - `state` is where the context packet goes: a plain string worked fine.
+
+### Question types (all three validated 2026-11-16)
+
+**`score`** — graded legend scoring.
+- `criteria`: **array of strings** (numbers rejected) — becomes the `legend`.
+- Response: `score` in range **0 … len(criteria)-1** (normalize: `score/(n-1)`),
+  plus `confidence` and `probabilities` per legend entry.
+
+**`choice`** — categorical pick.
+- `criteria`: **object** mapping `option-id → option description`, 2–255 options
+  (a single `"label"` key fails the count check).
+- Response: `{"type":"choice","choice":"<option-id>","confidence":…,"probabilities":{…}}`.
+- Verified: state "I just won the lottery" → `choice: "positive"`, conf 0.976.
+
+**`noul`** — bare scalar, no criteria needed (and criteria as an array is rejected;
+  must be an object if present at all).
+- Response: `{"type":"noul","noul": <float 0..1>}` — no confidence, no probabilities.
+- **Semantics: it answers the proposition as phrased in `instructions`**, not an
+  objective underlying state. Verified 2026-11-16:
+  | state | instructions | noul |
+  |---|---|---|
+  | "I just won the lottery" | "Overall mood?" | 0.9635 |
+  | "My dog died…crying" | "Overall mood?" | 0.6975 |
+  | "My dog died…crying" | "How positive is the overall mood?" | 0.0057 |
+  | "I passed my exam!" | "Is this good news?" | 0.9929 |
+- **Pitfall:** vague question → vague number. `noul` instructions must state the
+  proposition sharply or the value is meaningless. The name's expansion is not
+  documented — do not guess at it in code comments.
+- Natural VERO use: one `noul` per tick as a cheap overall-valence readout
+  (e.g. "How positive is the overall mood right now?"), alongside the 14 `score` gauges.
 
 ## Response shape (HTTP 200)
 
@@ -99,8 +127,8 @@ tokens, ~3 s wall clock.
 
 ## Known gaps / next investigations
 
-- [ ] `choice` question type — criteria object shape untested.
-- [ ] `noul` question type — purpose unknown.
+- [x] `choice` question type — criteria object = option-id → description, 2–255 options (validated).
+- [x] `noul` question type — bare 0..1 scalar, no criteria; answers the question *as phrased* (validated; see pitfalls).
 - [ ] Max batch behavior at 64 questions (latency, any per-question degradation).
 - [ ] Whether `state` as an object/array changes interpretation vs. a string.
-- [ ] Heater wiring into `gauges.py` — NOT done yet; parse-first-then-mutate rule applies.
+- [ ] Heater wiring into `gauges.py` — **DONE 2026-11-16**, see `heater.md`.
