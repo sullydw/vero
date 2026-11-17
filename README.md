@@ -16,9 +16,10 @@ per-feeling half-life — Newton's law of cooling applied to affect:
 
 Decay is computed lazily on read — there is no daemon and none is wanted.
 
-## Status (2026-11-16)
+## Status (2026-11-17)
 
-**v0 core + heater are working.** The board runs on this machine
+**v0 core, heater, history, dashboard, analysis and affect dial are all
+working.** The board runs on this machine
 (`$HERMES_HOME/feeling-gauges/gauges.py`, stdlib-only Python).
 
 - [x] Context packet collection (last N exchanges from the conversation store + clock)
@@ -27,12 +28,24 @@ Decay is computed lazily on read — there is no daemon and none is wanted.
 - [x] CLI gauge display with bars (`show`)
 - [x] Kill switch (`toggle off` freezes heat *and* cooling) + 60 s call throttle
 - [x] First real heating done; throttle/kill-switch regressions re-verified
-- [ ] Dashboard / visualization beyond the CLI
-- [ ] Logging & historical analysis
+- [x] Target-seeking heat model (saturation root-caused and fixed — `docs/heater.md`)
+- [x] Dashboard / visualization beyond the CLI — self-contained `dashboard.html`,
+      bars + SVG sparklines, no server/JS/network (`docs/dashboard.md`)
+- [x] Logging — append-only `history.jsonl`, one record per tick (`docs/history.md`)
+- [x] Analysis — `analyze.py` answers plain-language questions over the history
+      (`docs/analysis.md`)
+- [x] Overall affect dial — VA §4.25 split by valence, signed net (`docs/affect-dial.md`)
 - [ ] Packaging for other PCs (portable Python pkg + PyInstaller exe — planned, not built)
 
-**Design stance:** *passive first.* v0 measures and displays only. How gauges
-should affect Vera's replies is deliberately deferred to a later phase.
+**Design stance:** *passive first, lifted in part (2026-11-17).* Gauge state may
+steer Vera's **register and attention** — never her **claims** — and never
+overrides what is plainly happening in the conversation. Everything not named in
+that lift remains passive-first. The loop is capped one-directional across
+sessions, and the decision is reversible by Darryl at any time. Full rationale:
+[docs/steering.md](docs/steering.md).
+
+This supersedes the earlier "deliberately deferred to a later phase" stance,
+which held from v0 until 2026-11-17.
 
 ## Documentation
 

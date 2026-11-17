@@ -1,6 +1,6 @@
 # VERO Project Roadmap
 
-Last updated: 2026-11-16 (post-heater session with Vera).
+Last updated: 2026-11-17 (analysis layer + affect dial + steering decision).
 
 ## Phase 1: Foundation — COMPLETE
 
@@ -12,7 +12,7 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 - [x] Kill switch (`toggle off`) + 60 s cadence throttle
 - [x] First real heating 2026-11-16; regressions verified (`docs/heater.md`)
 
-## Phase 2: Refinement — IN PROGRESS
+## Phase 2: Refinement — COMPLETE
 
 - [x] Per-feeling tau configuration (14 feelings; tau table lives in `gauges.py`)
 - [x] Gauge visualization improvements (sparklines, dashboard) — **done 2026-11-16**:
@@ -28,7 +28,7 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 - [x] Validation with test conversations (probe runs: synthetic packet + live packet;
       `probe` subcommand is the read-only test harness)
 
-## Phase 3: Polish
+## Phase 3: Polish — IN PROGRESS
 
 - [x] Smoothing and noise reduction (EMA, alpha = 0.6 — landed in v0)
 - [ ] Configurable presets for different use cases
