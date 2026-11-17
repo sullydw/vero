@@ -20,8 +20,11 @@ Last updated: 2026-11-16 (post-heater session with Vera).
       sparklines from history, no server/JS/network; see `docs/dashboard.md`)
 - [x] Logging and historical analysis — **raw logging done 2026-11-16**:
       append-only `history.jsonl` (packet → clef → T per tick), local JSONL
-      chosen over Supermemory deliberately (see `docs/history.md`); analysis
-      scripts still open below
+      chosen over Supermemory deliberately (see `docs/history.md`);
+      **analysis done 2026-11-17**: `analyze.py` answers plain-language
+      questions ("why are you in such a good mood") over the history —
+      routed findings + tick-grounded excerpts + one narrator call
+      (see `docs/analysis.md`)
 - [x] Validation with test conversations (probe runs: synthetic packet + live packet;
       `probe` subcommand is the read-only test harness)
 
@@ -40,7 +43,8 @@ Last updated: 2026-11-16 (post-heater session with Vera).
       equilibrium pinned every gauge at 100); fixed with target-seeking model 2026-11-16
       (see heater.md). Bounded at strength×GAIN by construction; GAIN still the tuning dial.
 - [ ] Whether target-seeking GAIN (0.8) gives the *feel* Darryl wants after real-world
-      watching — saturation is solved, taste is not
+      watching — saturation is solved, taste is not. `analyze.py --stats` is the
+      measuring tool for this (mean/max per feeling vs. the bound).
 - [ ] 64-question max-batch behavior (latency / per-question degradation)
 - [ ] Does `state` as an object/array change interpretation vs. a plain string?
 - [ ] Cadence defaults confirmation (`--min-interval 60` stands meanwhile)

@@ -42,6 +42,7 @@ should affect Vera's replies is deliberately deferred to a later phase.
 | [docs/heater.md](docs/heater.md) | How the heater was wired into `gauges.py`, design decisions, verification evidence, next investigations |
 | [docs/history.md](docs/history.md) | Tick history logging: record shape, why local JSONL (not Supermemory), ordering/failure rules |
 | [docs/dashboard.md](docs/dashboard.md) | Self-contained dashboard.html: design, verification, regeneration notes |
+| [docs/analysis.md](docs/analysis.md) | `analyze.py`: plain-language questions over history, routing, grounding, narrator model |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement
