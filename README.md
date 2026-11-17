@@ -40,6 +40,7 @@ should affect Vera's replies is deliberately deferred to a later phase.
 |---|---|
 | [docs/clef-systemone-api.md](docs/clef-systemone-api.md) | Full Clef `/v1/systemone` contract: schema, all three question types (`score`/`choice`/`noul`), score calibration, validation runs, pitfalls |
 | [docs/heater.md](docs/heater.md) | How the heater was wired into `gauges.py`, design decisions, verification evidence, next investigations |
+| [docs/history.md](docs/history.md) | Tick history logging: record shape, why local JSONL (not Supermemory), ordering/failure rules |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement

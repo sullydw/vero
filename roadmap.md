@@ -16,7 +16,10 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 
 - [x] Per-feeling tau configuration (14 feelings; tau table lives in `gauges.py`)
 - [ ] Gauge visualization improvements (sparklines, dashboard)
-- [ ] Logging and historical analysis
+- [x] Logging and historical analysis — **raw logging done 2026-11-16**:
+      append-only `history.jsonl` (packet → clef → T per tick), local JSONL
+      chosen over Supermemory deliberately (see `docs/history.md`); analysis
+      scripts still open below
 - [x] Validation with test conversations (probe runs: synthetic packet + live packet;
       `probe` subcommand is the read-only test harness)
 
