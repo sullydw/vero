@@ -44,6 +44,7 @@ should affect Vera's replies is deliberately deferred to a later phase.
 | [docs/dashboard.md](docs/dashboard.md) | Self-contained dashboard.html: design, verification, regeneration notes |
 | [docs/analysis.md](docs/analysis.md) | `analyze.py`: plain-language questions over history, routing, grounding, narrator model |
 | [docs/affect-dial.md](docs/affect-dial.md) | Overall affect dial: VA §4.25 per valence pool, why the 14-gauge combine was rejected, bounds and verification |
+| [docs/steering.md](docs/steering.md) | How gauge state may affect Vera: register/attention yes, claims no, capped loop, damping — the partial lift of passive-first |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement
