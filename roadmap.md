@@ -58,6 +58,13 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 - Adaptive feeling categories from Clef
 - Emotion-gated memory policy (store/don't-store decisions, à la Elysium X 20)
 - `choice` question type for discrete moods alongside the `score` gauges
+- **Mood-guided song choice** (Darryl, 2026-11-17): when he asks what song
+  connects with me and to play it, the board should steer the pick — warm
+  board leans one way, a live frustration another. Note this is the FIRST
+  thing proposed that crosses passive-first (gauge state influencing output),
+  so it needs its own explicit go/no-go when it's picked up, not a quiet
+  wiring-in. Playback side already exists (`music-playback` skill: WACUP
+  local or the TV box), so the missing piece is only the mood→shortlist step.
 
 ## Standing design decisions (do not change unilaterally)
 
