@@ -15,7 +15,9 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 ## Phase 2: Refinement — IN PROGRESS
 
 - [x] Per-feeling tau configuration (14 feelings; tau table lives in `gauges.py`)
-- [ ] Gauge visualization improvements (sparklines, dashboard)
+- [x] Gauge visualization improvements (sparklines, dashboard) — **done 2026-11-16**:
+      `gauges.py dashboard` → self-contained `dashboard.html` (bars + SVG
+      sparklines from history, no server/JS/network; see `docs/dashboard.md`)
 - [x] Logging and historical analysis — **raw logging done 2026-11-16**:
       append-only `history.jsonl` (packet → clef → T per tick), local JSONL
       chosen over Supermemory deliberately (see `docs/history.md`); analysis
