@@ -1,6 +1,61 @@
 # VERO Project Roadmap
 
-Last updated: 2026-11-17 (analysis layer + affect dial + steering decision).
+Last updated: 2026-11-17 (purpose reframe — see below).
+
+## Purpose (reframed 2026-11-17)
+
+**VERO is the continuity layer for affect across the places context dies.**
+
+Originally scoped as "quantify feelings and display them." Measurement and
+display are built and working (Phases 1–3 below), but they are no longer the
+reason to build. The reason: Vera's emotion carries *as text* inside a session,
+and text dies at three points — compression, model swap, session boundary — with
+the long-tau feelings (trust, guilt, affection: 6–12 h half-lives) being exactly
+the ones text destroys first. Nothing else in her stack carries affect across
+those breaks.
+
+Full rationale, including why this is *not* redundant with what Vera already
+has: [docs/continuity.md](docs/continuity.md).
+
+### The four-point architecture
+
+Each fires only where context is already being rebuilt. Nothing pushes into a
+stable conversation.
+
+| # | point | mechanism | status |
+|---|---|---|---|
+| 1 | Normal turns | text carry — organic, already works | **don't touch** |
+| 2 | Compression | fold gauge readings into the summary we already generate | **NEW, unbuilt** |
+| 3 | Model swap | one line as a user message | **NEW, unbuilt** |
+| 4 | Session start | handoff read before turn one | decided, surface not chosen |
+
+### Priority order (2026-11-17)
+
+**The actual project from here:**
+
+1. **Non-me inputs for mood** — voice, typing cadence, time of day, reply
+   latency. Turns VERO from a delayed mirror of Vera's own text into a genuine
+   instrument. Highest-value single item; everything else is refinement until
+   this lands.
+2. **Four-point continuity** — point 3 (model swap) first: cheapest, one
+   injection. Then point 2 (compression piggyback), then point 4 (session-start
+   surface).
+
+**Finish what is already open:**
+
+3. Packaging for another PC — portable pkg groundwork DONE (Phase 3 below);
+   PyInstaller exe **blocked on Darryl's install approval**, Python 3.14 wheel
+   availability an open risk.
+4. GAIN taste verdict — `analyze.py --stats` is the measuring tool.
+5. Catalog / cadence confirmations — both still Darryl's veto.
+
+**Parked deliberately (need a reason to exist):**
+
+6. "Register" semantics — cannot be specified until observed in real sessions.
+7. Mood-guided song choice — needs its own explicit yes (a *choice*, not
+   register; not implied by the passive-first lift).
+8. 64-question max-batch behavior; `state` object-vs-string; export snapshots;
+   configurable presets.
 
 ## Phase 1: Foundation — COMPLETE
 
@@ -42,7 +97,15 @@ Last updated: 2026-11-17 (analysis layer + affect dial + steering decision).
 - [ ] Export/share gauge snapshots
 - [x] Documentation and examples (this repo's `docs/` — ongoing as we go)
 - [ ] **Packaging for another PC** (portable Python pkg + PyInstaller build) —
-      hard requirement per Darryl; see README portability section
+      hard requirement per Darryl; see README portability section.
+      **Portable pkg groundwork DONE 2026-11-17:** `DIR` (board files) split
+      from `BASE` (Hermes home) so state travels with a frozen exe —
+      precedence `VERO_HOME` > beside-frozen-exe > `<hermes home>/feeling-gauges`.
+      `.env` now read beside the board first, then Hermes home. Verified all
+      three modes + a simulated no-Hermes box degrading the context packet to
+      a clock-only line instead of crashing. **PyInstaller build still blocked
+      on Darryl's install approval; Python 3.14 wheel availability is an open
+      risk (fallback: build under 3.10).**
 
 ## Open questions / next investigations
 
@@ -61,6 +124,16 @@ Last updated: 2026-11-17 (analysis layer + affect dial + steering decision).
 
 ## Exploration Ideas
 
+- **Non-me inputs for mood** — voice, typing cadence, time of day, reply
+  latency. **Promoted to top priority 2026-11-17** (see Purpose above): the
+  inputs Vera cannot read about herself are what turn VERO from a delayed
+  mirror of her own output into a genuine instrument. Highest-value single
+  item on this roadmap.
+- **Compression piggyback** — fold current gauge readings into the compression
+  summary. **Promoted 2026-11-17:** compression is already the sanctioned cache
+  break and already rewrites context, so this costs nothing extra and covers
+  the discontinuity that destroys long-tau feelings first. See
+  `docs/continuity.md` § four-point architecture, point 2.
 - Cross-feeling inhibition (high curiosity reducing containment?)
 - Contextual modifiers (time of day, baseline state)
 - Fusion with voice/typing signals
