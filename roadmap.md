@@ -31,8 +31,7 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 ## Phase 3: Polish
 
 - [x] Smoothing and noise reduction (EMA, alpha = 0.6 — landed in v0)
-- [x] Configurable presets for different use cases — (superseded in practice by the
-      affect dial below; revisit if a second deployment needs different tuning)
+- [ ] Configurable presets for different use cases
 - [x] **Overall affect dial** — VA §4.25 remaining-capacity combine, **split by
       valence** (7 positives / 6 negatives, `surprise` excluded as neutral),
       `net = pos − neg` ∈ [−100, +100]. Landed 2026-11-17 in `show`, `--stats`,
