@@ -43,6 +43,7 @@ should affect Vera's replies is deliberately deferred to a later phase.
 | [docs/history.md](docs/history.md) | Tick history logging: record shape, why local JSONL (not Supermemory), ordering/failure rules |
 | [docs/dashboard.md](docs/dashboard.md) | Self-contained dashboard.html: design, verification, regeneration notes |
 | [docs/analysis.md](docs/analysis.md) | `analyze.py`: plain-language questions over history, routing, grounding, narrator model |
+| [docs/affect-dial.md](docs/affect-dial.md) | Overall affect dial: VA §4.25 per valence pool, why the 14-gauge combine was rejected, bounds and verification |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement

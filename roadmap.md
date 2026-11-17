@@ -31,7 +31,15 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 ## Phase 3: Polish
 
 - [x] Smoothing and noise reduction (EMA, alpha = 0.6 — landed in v0)
-- [ ] Configurable presets for different use cases
+- [x] Configurable presets for different use cases — (superseded in practice by the
+      affect dial below; revisit if a second deployment needs different tuning)
+- [x] **Overall affect dial** — VA §4.25 remaining-capacity combine, **split by
+      valence** (7 positives / 6 negatives, `surprise` excluded as neutral),
+      `net = pos − neg` ∈ [−100, +100]. Landed 2026-11-17 in `show`, `--stats`,
+      the dashboard header and per-tick history. The originally-specified
+      single 14-gauge combine was measured and REJECTED: it reads 85.8 on a
+      board whose mean is 12.3 and pegs at 100 once gauges pass 30 (see
+      `docs/affect-dial.md` for the saturation table).
 - [ ] Export/share gauge snapshots
 - [x] Documentation and examples (this repo's `docs/` — ongoing as we go)
 - [ ] **Packaging for another PC** (portable Python pkg + PyInstaller build) —
@@ -48,7 +56,9 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 - [ ] 64-question max-batch behavior (latency / per-question degradation)
 - [ ] Does `state` as an object/array change interpretation vs. a plain string?
 - [ ] Cadence defaults confirmation (`--min-interval 60` stands meanwhile)
-- [ ] Possible one-`noul` valence summary dial per tick (see API doc's noul section)
+- [x] ~~Possible one-`noul` valence summary dial per tick~~ — **superseded** by the
+      affect dial (§4.25 split by valence gives a signed number; see Phase 3 and
+      `docs/affect-dial.md`)
 
 ## Exploration Ideas
 
