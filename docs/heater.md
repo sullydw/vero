@@ -37,6 +37,45 @@ the decisions so the repo stays the source of truth.
 - Regressions: second `tick` throttled (6s < 60s min); `toggle off` → `tick --force`
   correctly skipped; `toggle on` restored.
 
+## Target-seeking heat model (2026-11-16, second pass)
+
+**Problem found by simulation:** the original additive injection
+`T += s·GAIN` has equilibrium `T_eq = s·GAIN / (1 − e^(−Δt/τ))`. At one tick
+per minute that denominator is tiny — T_eq ran **372 to 17,000** across the
+catalog, so every gauge pinned at the 100 cap within minutes of sustained
+conversation. Not caused by the systemone scale change; the structure predates it.
+
+**Averages were considered and rejected as the fix:** a moving average of a
+*sustained* input equals the input — it smooths jitter (the EMA already does)
+but does not bound equilibrium.
+
+**Fix (one injection-line change in `cmd_tick`):**
+
+```
+old:  T = T·e^(−Δt/τ) + s·GAIN                    (unbounded accumulation)
+new:  T = T·e^(−Δt/τ) + target·(1 − e^(−Δt/τ))     target = s·GAIN ≤ 80
+```
+
+The gauge now *relaxes toward* its target at its own τ — a gauge reads "how
+hot is this feeling NOW", not "how much heat ever poured in". τ keeps its
+personality: fast feelings snap to target, slow ones drift up. Cooling and
+EMA are untouched. Bonus: `Δt = 0` (forced-tick spam) injects nothing.
+
+**Rejected alternative:** VA-style §4.25 remaining-capency combining — that
+formula combines *static* ratings into an aggregate; it has no time dynamics.
+Reserved instead for the planned single "overall affect" dial (see roadmap),
+where combining independent strengths into one bounded 0–100 number is exactly
+its native job.
+
+**Verification (harness, isolated state, real `cmd_tick`, mocked Clef):**
+- 120 ticks @ fixed strength 30 → equilibrium **24.0** (= 30×0.8), max ≤ 24.5, never 100
+- τ=720m trust at 11.0 after 2 h (still converging); τ=15m surprise at 23.4 (converged)
+- extreme strength 100 → max **79.98** (target 80 bound holds)
+- `dt=0` forced tick → joy delta **0.0000**
+- real `tick --force` afterwards: frustration 1.0→25.2 (fast τ arrived at target),
+  trust 23.3→30.2 chasing target 38.3 (slow τ en route) — live behavior matches theory
+- backup: `gauges.py.bak-pre-targetseek`; pre-edit copy of the additive era kept too
+
 ## Next investigations
 
 - [ ] Context packet currently comes from `state.db` last-session slice — confirm

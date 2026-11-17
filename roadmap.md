@@ -31,9 +31,11 @@ Last updated: 2026-11-16 (post-heater session with Vera).
 
 ## Open questions / next investigations
 
-- [ ] Watch real ticks before any `GAIN` retune — systemone returns independent
-      0–100 strengths (not sum-to-100), so ticks run hotter than the original
-      chat-heater design intended
+- [x] ~~GAIN watch~~ — **superseded**: saturation root-caused by simulation (additive
+      equilibrium pinned every gauge at 100); fixed with target-seeking model 2026-11-16
+      (see heater.md). Bounded at strength×GAIN by construction; GAIN still the tuning dial.
+- [ ] Whether target-seeking GAIN (0.8) gives the *feel* Darryl wants after real-world
+      watching — saturation is solved, taste is not
 - [ ] 64-question max-batch behavior (latency / per-question degradation)
 - [ ] Does `state` as an object/array change interpretation vs. a plain string?
 - [ ] Cadence defaults confirmation (`--min-interval 60` stands meanwhile)
