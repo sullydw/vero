@@ -26,8 +26,20 @@ stable conversation.
 |---|---|---|---|
 | 1 | Normal turns | text carry — organic, already works | **don't touch** |
 | 2 | Compression | fold gauge readings into the summary we already generate | **NEW, unbuilt** |
-| 3 | Model swap | one line as a user message | **NEW, unbuilt** |
-| 4 | Session start | handoff read before turn one | decided, surface not chosen |
+| 3 | Model swap | one line as a user message | **BUILT 2026-11-18** |
+| 4 | Session start | handoff read before turn one | **BUILT 2026-11-18** |
+
+Points 3 and 4 ship together as the `vero-steering` plugin
+(`$HERMES_HOME/plugins/vero-steering/`), wired to `pre_llm_call`, whose
+`{"context"}` return is appended to the user message **at API time only** — so
+the stored transcript stays clean while the model still receives it. Verified
+end-to-end across two separate processes on one session: marker 1
+`session start`, marker 2 `model switch nemotron-3-super -> mimo-v2.6-flash`,
+both at `content_len=23` with `api_len` 4502/2307. Fail-open (board
+unreachable ⇒ no injection) verified with the module cache evicted. The
+plugin's own `steering_state.json` persists last-seen model per session so the
+swap survives the process boundary — a module global alone failed exactly the
+cross-process case VERO exists for.
 
 ### Priority order (2026-11-17)
 

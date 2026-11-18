@@ -93,6 +93,56 @@ into a stable conversation.
    Must land before the first turn, because prompt caching rules out
    mid-conversation rebuilds.
 
+## Build status — points 3 and 4 SHIPPED (2026-11-18)
+
+Both ship as the **`vero-steering` plugin** at
+`$HERMES_HOME/plugins/vero-steering/`, wired to `pre_llm_call`, which may return
+`{"context": "..."}`. Hermes appends that to the user message **at API time
+only** (`agent/turn_context.py`), so the stored transcript stays clean while the
+model receives it — measured: a 23-char user message carried 4.5 KB of
+`api_content`.
+
+**No core modification.** It lives in `$HERMES_HOME/plugins/`, so it survives
+`hermes update`, and `hermes plugins validate` passes 14/14 including
+`no core override` and `security scan: safe`.
+
+Verified end-to-end, one session across two separate processes:
+
+    marker 1  [VERO affect] session start. ...
+    marker 2  [VERO affect] model switch nemotron-3-super -> mimo-v2.6-flash. ...
+    both rows content_len=23, api_len=4502 / 2307
+
+### The bug worth recording
+
+The obvious implementation — a module global holding last-seen model — fails
+the case that matters most. Under `plugins.isolation: host` **every CLI
+invocation is a fresh process**, so a resumed session saw `prev=None` and
+injected nothing. A design that only works within one process solves the
+problem VERO doesn't have.
+
+Fix: last-seen model per session persisted in `steering_state.json` beside the
+board, plus an in-process set of sessions already injected here. Two signals,
+because neither separates all four cases alone:
+
+    file unknown                        -> new/resumed session: inject (cold cache)
+    file different model                -> swap: inject (swap invalidates cache anyway)
+    file same model + injected here     -> hot reload mid-conversation: SILENT
+    file same model + not injected here -> resumed in new process: inject
+
+Cache safety decides every branch: inject only where context is already being
+rebuilt — a new process, a resume, or a model swap.
+
+Fail-open throughout; any failure returns `None` and the turn proceeds. Its own
+`steering_state.json` is the only file it writes — `state.json` and
+`history.jsonl` are read-only here, hash-verified unchanged.
+
+Testing note: `gauges` caching in `sys.modules` will lie to you. Setting
+`VERO_HOME` after the first import has no effect — evict the module
+(`sys.modules.pop("gauges", None)`) before asserting fail-open, or you will
+"prove" a path that never ran.
+
+Point 2 (compression piggyback) remains UNBUILT.
+
 ## What survives, and what does not
 
 After compression Vera would have the **number, not the reason.** "Trust 40,
