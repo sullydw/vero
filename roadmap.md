@@ -71,7 +71,17 @@ exactly once per compaction rather than on every turn that still contains it.
    `toggle off/on` → `analyze --stats`, state written beside the exe, missing
    board degrades to `state missing -- run: gauges.exe init` with no traceback.
    The Python 3.14 wheel risk did not materialise — no 3.10 fallback needed.
-4. GAIN taste verdict — `analyze.py --stats` is the measuring tool.
+4. ~~GAIN taste verdict~~ **DONE 2026-11-18.** Darryl chose **1.0** — the gauge
+   settles at exactly what the classifier said (was 0.8, a leftover damping from
+   the old unbounded heater that target-seeking already replaced). Decided against
+   a replay of all 6 recorded ticks at 0.6/0.8/1.0/1.2, validated at worst error
+   0.009° vs the recorded history. Two findings: GAIN barely moves the summary
+   (2× change → 8 points of net affect) and it is **not a neutral volume knob** —
+   raising it moves net affect *down*, because the negative pool sits further
+   from its ceiling than the 7-gauge positive pool. No gauge saturates at any of
+   those values. `state.json`'s `k` override was removed so `gauges.py`'s `GAIN`
+   is the single knob (`st.get("k", GAIN)` meant editing the constant alone would
+   have silently done nothing).
 5. Catalog / cadence confirmations — both still Darryl's veto.
 
 **Parked deliberately (need a reason to exist):**

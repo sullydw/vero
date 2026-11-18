@@ -59,7 +59,17 @@ CATALOG = {
     "pride":       360,
 }
 
-GAIN = 0.8          # heat injected per 1% clef percentage (T += pct * GAIN)
+GAIN = 1.0          # ceiling: each gauge settles at s*GAIN (s = EMA'd clef %);
+                    # tau alone controls how fast it chases that. Chosen by
+                    # Darryl 2026-11-18 -- the gauge reads what the classifier
+                    # said. Was 0.8, a damping left over from the old UNBOUNDED
+                    # heater that pinned at 100; target-seeking bounds it now
+                    # (no gauge saturates even at GAIN 1.2). Not a neutral
+                    # volume knob: raising it moves net affect DOWN, because
+                    # the negative pool is further from its ceiling than the
+                    # 7-gauge positive pool.
+                    # NOTE: state.json's optional "k" overrides this if present
+                    # (st.get("k", GAIN)); keep them from silently disagreeing.
 EMA_ALPHA = 0.6     # smoothing on incoming percentages
 
 BASE = Path(os.environ.get(
@@ -413,7 +423,7 @@ def cmd_tick(min_interval=60, force=False):
     # one tick's heat may move. TARGET-SEEKING model (see VERO docs/heater.md):
     #   old: T = T*exp(-dt/tau) + s*GAIN        -> unbounded, pins at 100
     #   new: T = T*exp(-dt/tau) + target*(1-exp(-dt/tau)), target = s*GAIN
-    # equilibrium is exactly s*GAIN (<= 80 with GAIN=0.8); tau controls how
+    # equilibrium is exactly s*GAIN (<= 100 with GAIN=1.0); tau controls how
     # fast each gauge CHASES its target. dt=0 (forced spam) injects nothing.
     prev_tick = st.get("last_tick")
     base = float(prev_tick) if prev_tick else float(st["t0"])

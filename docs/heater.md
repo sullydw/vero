@@ -20,8 +20,9 @@ the decisions so the repo stays the source of truth.
   zero changes. 3-level legend → denom 2.
 - **Scale semantics changed vs. the old (never-live) chat heater:**
   old contract was percentages summing to 100; systemone returns *independent*
-  per-feeling strengths 0–100. With `GAIN = 0.8` one tick can inject up to ~80 heat
-  on a single gauge. EMA (`alpha = 0.6`) smooths successive ticks. First heated tick
+  per-feeling strengths 0–100. With `GAIN = 1.0` (was 0.8, set to 1.0 by Darryl
+  2026-11-18) one tick can inject up to ~100 heat on a single gauge. EMA
+  (`alpha = 0.6`) smooths successive ticks. First heated tick
   moves the board noticeably — expected, not a bug.
 - **Safety ordering kept:** API call completes and JSON parses *before* any
   `state.json` write; a failed heater call leaves the board untouched.
@@ -53,7 +54,7 @@ but does not bound equilibrium.
 
 ```
 old:  T = T·e^(−Δt/τ) + s·GAIN                    (unbounded accumulation)
-new:  T = T·e^(−Δt/τ) + target·(1 − e^(−Δt/τ))     target = s·GAIN ≤ 80
+new:  T = T·e^(−Δt/τ) + target·(1 − e^(−Δt/τ))     target = s·GAIN ≤ 100
 ```
 
 The gauge now *relaxes toward* its target at its own τ — a gauge reads "how
