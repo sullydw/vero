@@ -71,11 +71,15 @@ exactly once per compaction rather than on every turn that still contains it.
    the last tick, or any session ended since it — self-resetting because each
    tick moves the baseline, with a 10-minute cooldown and a failure message
    latched to once per episode. First sample landed 2026-11-18T12:37:40.
-   **Not captured, verified not guessable:** voice (transcripts are submitted as
-   ordinary user messages — 103,990 rows, zero voice `display_kind`, the STT
-   `source=` label never reaches the row) and typing cadence (no keystroke data
-   exists anywhere). Voice needs a **core change** to mark provenance — decision
-   for Darryl, not faked here.
+   **~~Voice~~ DROPPED 2026-11-18** ("lets drop it. i think its a dead end").
+   Reasons on record in [docs/nonme.md](docs/nonme.md): it needs a core change at
+   two points (transcripts carry no provenance marker — 103,990 rows, zero voice
+   `display_kind`; and the wav is unlinked after STT, so 47/47 recordings are
+   already gone), the signal is ~2–3 utterances a week, and **the mirror is
+   already broken without it** — four of his own timing signals flow every tick
+   plus the clock-driven loneliness gauge. Not pending, not parked: out of scope.
+   **Typing cadence** is uncapturable rather than undecided (no keystroke data
+   exists anywhere), so `pace_*` is its honest proxy.
    **Deliberately not yet fused into gauge heat:** correlation first, wiring
    second — picking which feeling these modulate before a week of data exists
    would be intuition dressed as instrumentation.
@@ -279,7 +283,11 @@ zero samples. Absence still costs nothing: `watch` never calls the API.
   `docs/continuity.md` § four-point architecture, point 2.
 - Cross-feeling inhibition (high curiosity reducing containment?)
 - Contextual modifiers (time of day, baseline state)
-- Fusion with voice/typing signals
+- ~~Fusion with voice/typing signals~~ — **voice DROPPED 2026-11-18**
+  ("dead end": two core changes, ~2 utterances/week, mirror already broken
+  without it); typing cadence has no data source. `pace_*` + `hour` +
+  `reply_latency` are the fusion that remains, and they are deliberately
+  unwired until a week of correlation data exists — see `docs/nonme.md`.
 - Adaptive feeling categories from Clef
 - Emotion-gated memory policy (store/don't-store decisions, à la Elysium X 20)
 - `choice` question type for discrete moods alongside the `score` gauges

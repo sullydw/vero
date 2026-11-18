@@ -32,7 +32,22 @@ max 42.7 minutes.
 
 ## What is NOT captured, and why
 
-**Voice — blocked on TWO independent facts, both verified 2026-11-18.**
+**Voice — DROPPED 2026-11-18 by Darryl's call** ("lets drop it. i think its a
+dead end"). No longer parked awaiting a yes: this is out of scope.
+
+*Why it is a dead end, on the evidence:*
+
+- It needs a **core change at two points**, and VERO's standing rule is don't
+  edit live Hermes core from here — so the cost is upstream work, not a plugin.
+- The signal is **sparse**: 47 voice recordings across ~3 weeks (~2–3 a week),
+  against 60–127 typed messages a day. Expensive to obtain, thin to learn from.
+- **The mirror is already broken without it.** The instrument-vs-mirror argument
+  only ever needed *one* input originating with Darryl, and four now flow every
+  tick (`hour`, `reply_latency_min`, `pace_median_min`, `pace_fastest_min`) plus
+  the clock-driven loneliness gauge. Prosody would have been the strongest
+  single signal available, but it stopped being load-bearing.
+
+The two blockers that made the decision easy, both verified 2026-11-18: **
 
 1. *Provenance.* `transcribe_audio(..., source="voice_mode")` passes a label to
    the **STT call only**; it never reaches the message row. Verified:
@@ -59,8 +74,14 @@ the unlink already provides (no spoken utterance ever persists) while yielding
 the one signal text genuinely cannot carry — **how he actually sounded.** A bare
 "is_voice" boolean would add almost nothing on its own.
 
-Both are out of scope for VERO (live-source rule: don't edit Hermes core from
-here). Filed as a decision for Darryl, not faked.
+Both were out of scope for VERO (live-source rule: don't edit Hermes core from
+here). **Recorded as dropped rather than faked** — the absence stays documented
+so nobody re-derives it as an open question later.
+
+**What would reopen it** (nobody is building this): a non-core way to mark a
+message as spoken, or Darryl speaking far more often. If it ever returns,
+*compute-then-discard* above is still the only version worth doing — it keeps
+the privacy property the existing unlink already provides.
 
 **Typing cadence — no data exists.** There is no keystroke or inter-key timing
 anywhere in the stack. Message-level gaps are the closest available proxy, and
