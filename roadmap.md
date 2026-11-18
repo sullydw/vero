@@ -121,7 +121,24 @@ exactly once per compaction rather than on every turn that still contains it.
 ## Phase 3: Polish — IN PROGRESS
 
 - [x] Smoothing and noise reduction (EMA, alpha = 0.6 — landed in v0)
-- [ ] Configurable presets for different use cases
+- [x] **Configurable presets** — `init --preset <name>` / `preset <name>` /
+      `presets`, **DONE 2026-11-18**. Chosen AT LAUNCH (Darryl): a preset sets the
+      BASE and everything else is relative to it — GAIN, EMA smoothing and a
+      `tau_scale` applied to the whole catalog. Four built in: `default`,
+      `steady` (ema .4, tau x1.5), `responsive` (ema .8, tau x0.5), `damped`
+      (gain .6). Taus always re-derived from `CATALOG`, so re-applying is
+      idempotent (verified: 3x apply → 360, never compounds to 90).
+      `fresh_state()` no longer writes `k`, so a preset is the only thing that
+      overrides GAIN — the hidden-second-knob trap is closed structurally.
+      **Measured on the real 6-tick history** (fresh board from 0, 89 min):
+      `damped` does not change tracking at all (GAIN scales reading and
+      equilibrium together → identical 12/32/53/86%), so **GAIN is a dial
+      offset, not a tracking parameter**; `tau_scale` and `ema_alpha` are.
+      `responsive` roughly doubles within-session tracking (trust 12%→23%,
+      anticipation 53%→81%) with zero saturation. Slow feelings still show only
+      12–38% of equilibrium in a 90-min session — by design, since `tau=720`
+      for trust is a ~27.6 h constant and VERO's purpose is persistence across
+      gaps, not live mirroring.
 - [x] **Overall affect dial** — VA §4.25 remaining-capacity combine, **split by
       valence** (7 positives / 6 negatives, `surprise` excluded as neutral),
       `net = pos − neg` ∈ [−100, +100]. Landed 2026-11-17 in `show`, `--stats`,

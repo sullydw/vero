@@ -159,7 +159,9 @@ def fresh_state():
     return {
         "version": 0,
         "enabled": True,
-        "k": GAIN,
+        # no "k" here on purpose: absent means "use module GAIN". A preset is the
+        # sanctioned way to override it (see PRESETS), so it -- not a stray key --
+        # is what writes k. Keeps one obvious place to tune.
         "ema_alpha": EMA_ALPHA,
         "last_tick": None,
         "t0": now,
@@ -468,12 +470,79 @@ def ask_clef_systemone(packet, timeout=90):
 
 
 # ------------------------------------------------------------ subcommands ---
-def cmd_init():
+
+# -------------------------------------------------------------- presets ---
+# A preset is chosen AT LAUNCH (init --preset / preset <name>) and sets the BASE
+# the rest of the board is relative to: how much GAIN, how heavily readings are
+# smoothed, and how fast every gauge decays. Everything downstream is derived
+# from CATALOG x tau_scale, so re-applying is idempotent -- never compounds.
+#
+#   name: (one-line description, GAIN, ema_alpha, tau_scale)
+PRESETS = {
+    "default":    ("as shipped: realistic half-lives, gauge reads the classifier",
+                   GAIN, EMA_ALPHA, 1.0),
+    "steady":     ("slow and calm: heavy smoothing, longer memory",
+                   GAIN, 0.4, 1.5),
+    "responsive": ("fast and twitchy: light smoothing, quick decay",
+                   GAIN, 0.8, 0.5),
+    "damped":     ("quieter readings: everything sits lower on the dial",
+                   0.6, EMA_ALPHA, 1.0),
+}
+
+
+def apply_preset(st, name):
+    """Stamp a preset onto a state dict. Idempotent: taus always come from CATALOG."""
+    if name not in PRESETS:
+        sys.exit("unknown preset: " + name + "  (see: gauges.py presets)")
+    desc, k, alpha, scale = PRESETS[name]
+    st["preset"] = name
+    if abs(float(k) - GAIN) < 1e-12:
+        st.pop("k", None)          # matches the module default -> no override key
+    else:
+        st["k"] = float(k)
+    st["ema_alpha"] = float(alpha)
+    gauges = st.setdefault("gauges", {})
+    for n, base_tau in CATALOG.items():
+        rec = gauges.setdefault(n, {"T": 0.0, "tau": base_tau})
+        rec["tau"] = float(base_tau) * float(scale)
+    return st
+
+
+def preset_summary(st):
+    name = st.get("preset")
+    if not name:
+        return "default (module GAIN=%s, ema=%s)" % (GAIN, st.get("ema_alpha", EMA_ALPHA))
+    desc = PRESETS.get(name, ("",))[0]
+    return "%s%s" % (name, (" -- " + desc) if desc else "")
+
+
+def cmd_presets():
+    active = load_state().get("preset")
+    log("presets (chosen at launch; everything else is relative to the base):")
+    for n, (desc, k, alpha, scale) in PRESETS.items():
+        mark = "*" if n == active else " "
+        log(f"  {mark} {n:<12} gain={k:<4} ema={alpha:<4} tau x{scale}")
+        log(f"      {desc}")
+    log("")
+    log("active: " + (active or "default (no preset stored in state.json)"))
+    log("apply:  gauges.py preset <name>   (intended at init --preset <name>)")
+
+
+def cmd_init(preset=None):
+    if preset and preset not in PRESETS:
+        sys.exit("unknown preset: " + preset + "  (see: gauges.py presets)")
     if STATE_PATH.exists():
         log("already initialised: " + str(STATE_PATH))
+        if preset:
+            log(f"  use 'gauges.py preset {preset}' to re-apply it to this board")
         return
-    save_state(fresh_state())
+    st = fresh_state()
+    if preset:
+        apply_preset(st, preset)
+    save_state(st)
     log("initialised: " + str(STATE_PATH) + f"  ({len(CATALOG)} gauges)")
+    if preset:
+        log("preset: " + preset + " -- " + PRESETS[preset][0])
 
 
 def cmd_key_status():
@@ -795,6 +864,7 @@ def cmd_show():
     aff = overall_affect({n: t for n, t, _ in rows})
     log(f"overall affect -- pos {aff['pos']:5.1f}  neg {aff['neg']:5.1f}  "
         f"net {aff['net']:+6.1f}   (§4.25 per valence pool, surprise excluded)")
+    log(f"  preset: {preset_summary(st)}")
     log(f"  gap since last interaction: {int(gap_now)} min")
     log("")
     for name, T, tau in rows:
@@ -892,7 +962,13 @@ def main():
     args = sys.argv[1:]
     cmd = args[0] if args else "show"
     if cmd == "init":
-        cmd_init()
+        preset = None
+        if "--preset" in args:
+            i = args.index("--preset")
+            if i + 1 >= len(args):
+                sys.exit("usage: gauges.py init --preset <name>")
+            preset = args[i + 1]
+        cmd_init(preset)
     elif cmd == "tick":
         mi = 60
         force = "--force" in args
@@ -951,6 +1027,20 @@ def main():
         if len(args) < 3:
             sys.exit("usage: gauges.py set <feeling> <T>")
         cmd_set(args[1], args[2])
+    elif cmd == "presets":
+        cmd_presets()
+    elif cmd == "preset":
+        if len(args) < 2:
+            sys.exit("usage: gauges.py preset <name>")
+        if not STATE_PATH.exists():
+            sys.exit("state missing -- run: init --preset " + args[1])
+        st = load_state()
+        before = st.get("preset")
+        apply_preset(st, args[1])
+        save_state(st)
+        log(f"preset: {(before or 'default')} -> {args[1]}")
+        log("  " + PRESETS[args[1]][0])
+        log("  taus re-derived from CATALOG (idempotent, never compounded)")
     elif cmd == "key-status":
         cmd_key_status()
     else:
