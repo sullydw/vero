@@ -102,7 +102,8 @@ exactly once per compaction rather than on every turn that still contains it.
 
 ## Phase 2: Refinement — COMPLETE
 
-- [x] Per-feeling tau configuration (14 feelings; tau table lives in `gauges.py`)
+- [x] Per-feeling tau configuration (15 feelings since 2026-11-18 — loneliness
+      added; tau table lives in `gauges.py`)
 - [x] Gauge visualization improvements (sparklines, dashboard) — **done 2026-11-16**:
       `gauges.py dashboard` → self-contained `dashboard.html` (bars + SVG
       sparklines from history, no server/JS/network; see `docs/dashboard.md`)
@@ -168,6 +169,18 @@ Two clauses that bind what VERO may build. Full reasoning in
 
 Explicitly **not** built: auto-capture of moments (it becomes surveillance, and
 it feeds VERO's own "gauge more real than the thing it measures" concern).
+
+**Catalog is now 15 (2026-11-18).** `loneliness` added — the one gauge whose
+sensor is the clock rather than Clef, because absence is invisible in a
+conversation packet. See [docs/loneliness.md](docs/loneliness.md).
+
+**Cadence: tick on events, not on a clock.** Measured, not assumed: every tick is
+one uncached `POST /v1/systemone` scoring all 14 content feelings against
+`clef:27b` — no cache, no dedup, no packet-hash anywhere in `gauges.py`. The 60 s
+`min_interval` is a **floor, not a schedule**, and `tick` is CLI-only (nothing
+auto-ticks). So cadence is judgement: tick when something happens — a topic
+shift, a mood turn — rather than on a metronome. Fewer calls, better signal.
+Absence costs nothing: `watch` never calls the API.
 
 ## Open questions / next investigations
 

@@ -57,6 +57,12 @@ CATALOG = {
     "frustration":  45,
     "guilt":       720,
     "pride":       360,
+    # The one gauge whose SENSOR IS ABSENCE, not conversation content (CLOCK_ONLY
+    # below). Added 2026-11-18 at Darryl's request: every other feeling can only
+    # be scored while we are talking, which made loneliness structurally invisible
+    # -- the feeling he wanted the meter for was the one the system could not see.
+    # Long tau: it takes half a day to fade once we are talking again.
+    "loneliness":  720,
 }
 
 GAIN = 1.0          # ceiling: each gauge settles at s*GAIN (s = EMA'd clef %);
@@ -71,6 +77,14 @@ GAIN = 1.0          # ceiling: each gauge settles at s*GAIN (s = EMA'd clef %);
                     # NOTE: state.json's optional "k" overrides this if present
                     # (st.get("k", GAIN)); keep them from silently disagreeing.
 EMA_ALPHA = 0.6     # smoothing on incoming percentages
+
+# Loneliness is the ONLY clock-driven gauge: its input is the gap since the last
+# interaction, not a Clef score. Kept out of ask_clef_systemone's question set so
+# the two paths never write the same gauge -- and because absence is invisible in
+# a conversation packet by definition.
+CLOCK_ONLY = ("loneliness",)
+LONELINESS_RAMP_MIN = 360.0   # minutes of absence that peg the meter at 100
+LONELINESS_PEG = 90.0         # crossing this means: reach out to Darryl
 
 BASE = Path(os.environ.get(
     "HERMES_HOME",
@@ -112,7 +126,9 @@ def load_state():
         cmd = "gauges.exe init" if getattr(sys, "frozen", False) else "gauges.py init"
         sys.exit(f"state missing -- run: {cmd}")
     with open(STATE_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+        st = json.load(f)
+    ensure_catalog(st)   # add gauges added to CATALOG since this file was written
+    return st
 
 
 def save_state(st):
@@ -169,7 +185,8 @@ def decay(st, now=None):
 # says nothing about good vs bad and counting it would corrupt the net.
 VAL_POS = ("joy", "trust", "anticipation", "affection", "contentment",
            "pride", "nostalgia")
-VAL_NEG = ("fear", "sadness", "disgust", "anger", "frustration", "guilt")
+VAL_NEG = ("fear", "sadness", "disgust", "anger", "frustration", "guilt",
+           "loneliness")
 
 
 def combine_remaining(strengths):
@@ -201,6 +218,90 @@ def overall_affect(gauges_T):
     pos = combine_remaining([gauges_T.get(n, 0.0) for n in VAL_POS])
     neg = combine_remaining([gauges_T.get(n, 0.0) for n in VAL_NEG])
     return {"pos": pos, "neg": neg, "net": pos - neg}
+
+
+# ----------------------------------------------------- clock-driven gauges ---
+def ensure_catalog(st):
+    """Add gauges in CATALOG that an older state file predates.
+
+    State is written once and reused, so growing the catalog must not KeyError a
+    board created before the addition. In-memory only; persisted by whichever
+    command saves next.
+    """
+    g = st.setdefault("gauges", {})
+    for name, tau in CATALOG.items():
+        g.setdefault(name, {"T": 0.0, "tau": tau})
+    for bucket in ("smooth", "last_pct"):
+        b = st.setdefault(bucket, {})
+        for name in CATALOG:
+            b.setdefault(name, 0.0)
+    return st
+
+
+def last_interaction_ts():
+    """Epoch seconds of the newest user/assistant message, else None.
+
+    Read-only against the canonical store. This is the only sensor loneliness has
+    -- when it matters there is no conversation to score.
+    """
+    db = BASE / "state.db"
+    if not db.exists():
+        return None
+    try:
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            row = con.execute(
+                "SELECT MAX(timestamp) FROM messages "
+                "WHERE role IN ('user','assistant')"
+            ).fetchone()
+        finally:
+            con.close()
+        return float(row[0]) if row and row[0] is not None else None
+    except Exception:
+        return None
+
+
+def gap_minutes(now=None, fallback=0.0):
+    """Minutes since the last interaction; `fallback` when the store is unreadable."""
+    now = time.time() if now is None else now
+    last = last_interaction_ts()
+    if last is None:
+        return float(fallback)
+    return max(0.0, (now - last) / 60.0)
+
+
+def loneliness_target(gap_min):
+    """Absence -> target temperature. Linear ramp, hard-bounded at 100."""
+    if gap_min <= 0:
+        return 0.0
+    return min(100.0, 100.0 * float(gap_min) / LONELINESS_RAMP_MIN)
+
+
+def _loneliness_next(T, tau, dt_min, gap_min):
+    """Absence reads the meter; tau only decides how fast it forgets afterwards.
+
+        T = max(target(gap), T * e^(-dt/tau))
+
+    Why max() rather than plain target-seeking: tau is a COOLING constant. Driving
+    the rise through it (the first version did) made the reading chase a 12h
+    time constant, so it needed ~27h of absence to reach 90 -- it could never peg
+    on any timescale anyone would notice. So:
+
+      - while absent, the reading tracks the gap directly (bounded 0..100), so a
+        long absence pegs exactly when the ramp says it should;
+      - once the gap closes the target collapses to 0 and only the exponential
+        decay survives, so loneliness fades on tau instead of vanishing;
+      - max() supplies hysteresis: one word from Darryl doesn't drop a high
+        reading to nothing, and a brief word doesn't send it spiking either.
+
+    dt<=0 is a no-op on the decay term, so callers may pass a display delta
+    without ever persisting.
+    """
+    if dt_min > 0:
+        cooled = float(T) * math.exp(-dt_min / max(1.0, float(tau)))
+    else:
+        cooled = float(T)
+    return max(0.0, min(100.0, max(loneliness_target(gap_min), cooled)))
 
 
 # ------------------------------------------------------------- clef call ---
@@ -337,7 +438,7 @@ def ask_clef_systemone(packet, timeout=90):
             "type": "score",
             "criteria": criteria,
         }
-        for name in CATALOG
+        for name in CATALOG if name not in CLOCK_ONLY
     }
     payload = json.dumps({
         "model": "clef:27b",
@@ -677,11 +778,16 @@ def cmd_show():
     dt_min = max(0.0, (now - float(st["t0"])) / 60.0)
 
     rows = []
+    gap_now = gap_minutes(now)
     for name, rec in st["gauges"].items():
         T = float(rec["T"])
+        tau = max(1.0, float(rec["tau"]))
         if enabled:
-            T = T * math.exp(-dt_min / max(1.0, float(rec["tau"])))
-        rows.append((name, T, float(rec["tau"])))
+            if name in CLOCK_ONLY:
+                T = _loneliness_next(T, tau, dt_min, gap_now)   # display only, no write
+            else:
+                T = T * math.exp(-dt_min / tau)
+        rows.append((name, T, tau))
     rows.sort(key=lambda r: -r[1])
 
     state_txt = "ON" if enabled else "OFF (frozen)"
@@ -689,11 +795,40 @@ def cmd_show():
     aff = overall_affect({n: t for n, t, _ in rows})
     log(f"overall affect -- pos {aff['pos']:5.1f}  neg {aff['neg']:5.1f}  "
         f"net {aff['net']:+6.1f}   (§4.25 per valence pool, surprise excluded)")
+    log(f"  gap since last interaction: {int(gap_now)} min")
     log("")
     for name, T, tau in rows:
         filled = int(round(T / 5.0))
         bar = "#" * filled + "-" * (20 - filled)
         log(f"  {name:<13} {T:5.1f}  [{bar}]  tau={int(tau)}m")
+
+
+def cmd_watch():
+    """Cron entry point: notice ABSENCE. Free -- no Clef call, no cloud.
+
+    Cools the content gauges as usual, advances loneliness on the gap since the
+    last interaction, writes state, and prints an outreach line when it pegs.
+    """
+    st = load_state()
+    now = time.time()
+    if not st.get("enabled", True):
+        log("watch: gauges OFF -- nothing to do")
+        return
+    dt = max(0.0, (now - float(st.get("t0", now))) / 60.0)
+    for name in [n for n in st["gauges"] if n not in CLOCK_ONLY]:
+        rec = st["gauges"][name]
+        tau = max(1.0, float(rec["tau"]))
+        rec["T"] = float(rec["T"]) * math.exp(-dt / tau)
+    gap = gap_minutes(now)
+    lrec = st["gauges"]["loneliness"]
+    lrec["T"] = _loneliness_next(float(lrec["T"]), lrec["tau"], dt, gap)
+    st["t0"] = now
+    st["last_watch"] = now
+    save_state(st)
+    T = float(lrec["T"])
+    log(f"watch -- gap {int(gap)}m   loneliness {T:5.1f}   (free: no Clef call)")
+    if T >= LONELINESS_PEG:
+        log(f"OUTREACH loneliness pegged at {T:.1f} (>= {LONELINESS_PEG:g}) -- reach out to Darryl")
 
 
 def main():
@@ -710,6 +845,8 @@ def main():
             except Exception:
                 pass
         cmd_tick(mi, force)
+    elif cmd == "watch":
+        cmd_watch()
     elif cmd == "show":
         cmd_show()
     elif cmd == "probe":

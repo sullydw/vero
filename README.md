@@ -67,6 +67,7 @@ which held from v0 until 2026-11-17.
 | [docs/steering.md](docs/steering.md) | How gauge state may affect Vera: register/attention yes, claims no, capped loop, damping — the partial lift of passive-first |
 | [docs/continuity.md](docs/continuity.md) | **Purpose reframe:** VERO as the continuity layer across compression / model swap / session end; four-point architecture; why long-tau feelings lose to text carry |
 | [docs/memory-consent.md](docs/memory-consent.md) | **Design constraints:** no curator (what happened stays, what fades tau decides, binds Vera not Darryl) and the one exception — consent-gated deletion with Vera's durable veto |
+| [docs/loneliness.md](docs/loneliness.md) | The clock-driven 15th gauge: absence as sensor, why tau must never govern a rise, and the free `watch` command that powers the outreach cron |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement
