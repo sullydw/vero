@@ -141,7 +141,18 @@ Testing note: `gauges` caching in `sys.modules` will lie to you. Setting
 (`sys.modules.pop("gauges", None)`) before asserting fail-open, or you will
 "prove" a path that never ran.
 
-Point 2 (compression piggyback) remains UNBUILT.
+Point 2 (compression piggyback) is BUILT — but in a DIFFERENT SHAPE than
+planned. Folding readings into the summary prompt has no plugin seam (no config
+key; `memory_context` comes from the memory provider), so it would have meant a
+core edit: live-source rule, clobbered by `hermes update`, needs a restart.
+Instead the plugin DETECTS the compaction marker in `conversation_history`
+(`[CONTEXT COMPACTION` / `[CONTEXT SUMMARY]`) and injects on the first turn
+after it. Compression has ALREADY rewritten the prefix then, so this costs no
+extra cache break — same goal, no core change. Keyed on sha1 of the summary
+text so it fires exactly ONCE per compaction, not on every turn still containing
+it; a repeat in a new process reports "session resume", not "after compression"
+(verified). Unit-tested against the real marker string — NOT yet exercised by a
+live compression run.
 
 ## What survives, and what does not
 

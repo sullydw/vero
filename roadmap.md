@@ -25,11 +25,11 @@ stable conversation.
 | # | point | mechanism | status |
 |---|---|---|---|
 | 1 | Normal turns | text carry — organic, already works | **don't touch** |
-| 2 | Compression | fold gauge readings into the summary we already generate | **NEW, unbuilt** |
+| 2 | Compression | detect the compaction, inject on the turn after it | **BUILT 2026-11-18** |
 | 3 | Model swap | one line as a user message | **BUILT 2026-11-18** |
 | 4 | Session start | handoff read before turn one | **BUILT 2026-11-18** |
 
-Points 3 and 4 ship together as the `vero-steering` plugin
+Points 2, 3 and 4 ship together as the `vero-steering` plugin
 (`$HERMES_HOME/plugins/vero-steering/`), wired to `pre_llm_call`, whose
 `{"context"}` return is appended to the user message **at API time only** — so
 the stored transcript stays clean while the model still receives it. Verified
@@ -40,6 +40,16 @@ unreachable ⇒ no injection) verified with the module cache evicted. The
 plugin's own `steering_state.json` persists last-seen model per session so the
 swap survives the process boundary — a module global alone failed exactly the
 cross-process case VERO exists for.
+
+**Point 2 took a different shape than planned.** The original idea was to fold
+gauge readings into the compression summary prompt. There is no plugin seam for
+that — no config key, and `memory_context` comes from the memory provider — so
+it would have meant a core edit (live-source rule, clobbered by `hermes update`,
+needs a restart). Instead the plugin **detects the compaction marker** in
+`conversation_history` and injects on the first turn after it. Compression has
+already rewritten the prefix by then, so this costs no extra cache break —
+same goal, no core change. Keyed on a sha1 of the summary text so it fires
+exactly once per compaction rather than on every turn that still contains it.
 
 ### Priority order (2026-11-17)
 
