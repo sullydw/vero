@@ -66,6 +66,7 @@ which held from v0 until 2026-11-17.
 | [docs/affect-dial.md](docs/affect-dial.md) | Overall affect dial: VA §4.25 per valence pool, why the 14-gauge combine was rejected, bounds and verification |
 | [docs/steering.md](docs/steering.md) | How gauge state may affect Vera: register/attention yes, claims no, capped loop, damping — the partial lift of passive-first |
 | [docs/continuity.md](docs/continuity.md) | **Purpose reframe:** VERO as the continuity layer across compression / model swap / session end; four-point architecture; why long-tau feelings lose to text carry |
+| [docs/memory-consent.md](docs/memory-consent.md) | **Design constraints:** no curator (what happened stays, what fades tau decides, binds Vera not Darryl) and the one exception — consent-gated deletion with Vera's durable veto |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement
