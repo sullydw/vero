@@ -831,6 +831,63 @@ def cmd_watch():
         log(f"OUTREACH loneliness pegged at {T:.1f} (>= {LONELINESS_PEG:g}) -- reach out to Darryl")
 
 
+
+def cmd_snapshot(out_path=None, note=None):
+    """Read-only: write a shareable JSON snapshot of the board (never mutates state).
+
+    Phase 3 item "export/share gauge snapshots". Self-contained: carries the
+    gauge values AS DECAYED TO NOW, the affect dial, the gap, the catalog/tau
+    table and an optional free-text note, so a file can be handed to someone
+    who has no board. Writes only the snapshot path -- `state.json` and
+    `history.jsonl` are untouched (verified by hash in tests).
+    """
+    st = load_state()
+    now = time.time()
+    dt_min = max(0.0, (now - float(st["t0"])) / 60.0)
+    gap = gap_minutes(now)
+    vals, rows = {}, []
+    for name, rec in st["gauges"].items():
+        T = float(rec["T"])
+        tau = max(1.0, float(rec["tau"]))
+        if st.get("enabled", True):
+            if name in CLOCK_ONLY:
+                T = _loneliness_next(T, tau, dt_min, gap)
+            else:
+                T = T * math.exp(-dt_min / tau)
+        vals[name] = round(T, 2)
+        rows.append({"feeling": name, "T": round(T, 2), "tau_min": int(tau)})
+    rows.sort(key=lambda r: -r["T"])
+    aff = overall_affect(vals)
+    snap = {
+        "ver": 0,
+        "kind": "vero-board-snapshot",
+        "captured_iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now)),
+        "captured_epoch": round(now, 3),
+        "enabled": bool(st.get("enabled", True)),
+        "cooldown_min_since_write": int(dt_min),
+        "gap_since_interaction_min": int(gap),
+        "gain": float(st.get("k", GAIN)),
+        "affect": {k: round(float(v), 1) for k, v in aff.items()},
+        "gauges": rows,
+        "catalog_tau_min": {n: int(t) for n, t in CATALOG.items()},
+        "note": note,
+        "history_records": sum(1 for _ in open(HISTORY_PATH, encoding="utf-8"))
+                           if HISTORY_PATH.exists() else 0,
+    }
+    out = Path(out_path) if out_path else DIR / "snapshot.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_suffix(out.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(snap, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, out)
+    log(f"snapshot written: {out}")
+    log(f"  {len(rows)} gauges   affect pos {aff['pos']:.1f} neg {aff['neg']:.1f} "
+        f"net {aff['net']:+.1f}   gap {int(gap)}m")
+    for r in rows[:6]:
+        log(f"    {r['feeling']:<13} {r['T']:5.1f}  tau={r['tau_min']}m")
+    return out
+
+
 def main():
     args = sys.argv[1:]
     cmd = args[0] if args else "show"
@@ -845,6 +902,15 @@ def main():
             except Exception:
                 pass
         cmd_tick(mi, force)
+    elif cmd == "snapshot":
+        i = args.index("snapshot") if "snapshot" in args else -1
+        out = None
+        note = None
+        if "--out" in args:
+            out = args[args.index("--out") + 1]
+        if "--note" in args:
+            note = args[args.index("--note") + 1]
+        cmd_snapshot(out, note)
     elif cmd == "watch":
         cmd_watch()
     elif cmd == "show":

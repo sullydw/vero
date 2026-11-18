@@ -87,8 +87,9 @@ exactly once per compaction rather than on every turn that still contains it.
 **Parked deliberately (need a reason to exist):**
 
 6. "Register" semantics — cannot be specified until observed in real sessions.
-7. 64-question max-batch behavior; `state` object-vs-string; export snapshots;
-   configurable presets.
+7. `state` object-vs-string (does it change Clef's interpretation?);
+   configurable presets. ~~64-question max-batch~~ answered 2026-11-18;
+   ~~export snapshots~~ built 2026-11-18.
 
 ## Phase 1: Foundation — COMPLETE
 
@@ -128,7 +129,11 @@ exactly once per compaction rather than on every turn that still contains it.
       single 14-gauge combine was measured and REJECTED: it reads 85.8 on a
       board whose mean is 12.3 and pegs at 100 once gauges pass 30 (see
       `docs/affect-dial.md` for the saturation table).
-- [ ] Export/share gauge snapshots
+- [x] **Export/share gauge snapshots** — `gauges.py snapshot [--out P] [--note S]`,
+      **DONE 2026-11-18.** Read-only w.r.t. the board (hash-verified: `state.json`
+      unchanged, history still 6). Writes self-contained JSON: all 15 gauges decayed
+      to now, affect dial, gap, gain, tau table, history count, optional note —
+      shareable with someone who has no board.
 - [x] Documentation and examples (this repo's `docs/` — ongoing as we go)
 - [x] **Packaging for another PC** (portable Python pkg + PyInstaller build) —
       hard requirement per Darryl. **COMPLETE 2026-11-18.**
@@ -190,7 +195,14 @@ Absence costs nothing: `watch` never calls the API.
 - [ ] Whether target-seeking GAIN (0.8) gives the *feel* Darryl wants after real-world
       watching — saturation is solved, taste is not. `analyze.py --stats` is the
       measuring tool for this (mean/max per feeling vs. the bound).
-- [ ] 64-question max-batch behavior (latency / per-question degradation)
+- [x] ~~64-question max-batch behavior~~ — **ANSWERED 2026-11-18** by real call at
+      the documented ceiling: **64/64 answered, 1.2 s total (19 ms/question)**, no
+      missing answers, no positional degradation (first-8 vs last-8 deltas mixed
+      sign: joy +4.2, trust −1.1, frustration +3.8, sadness +2.4). The real finding
+      is **run-to-run noise, not batch position**: identical repeated questions gave
+      sadness 1.8–13.6 (CV 51%), joy 6.9–19.3 (CV 30%), frustration 18.2–39.4
+      (CV 20%), trust 36.0–51.5 (CV 8%). A single Clef score is a noisy sample —
+      EMA smoothing is load-bearing, and one tick's number should never be over-read.
 - [ ] Does `state` as an object/array change interpretation vs. a plain string?
 - [ ] Cadence defaults confirmation (`--min-interval 60` stands meanwhile)
 - [x] ~~Possible one-`noul` valence summary dial per tick~~ — **superseded** by the

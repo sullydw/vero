@@ -129,6 +129,13 @@ tokens, ~3 s wall clock.
 
 - [x] `choice` question type — criteria object = option-id → description, 2–255 options (validated).
 - [x] `noul` question type — bare 0..1 scalar, no criteria; answers the question *as phrased* (validated; see pitfalls).
-- [ ] Max batch behavior at 64 questions (latency, any per-question degradation).
+- [x] Max batch behavior at 64 questions — **measured 2026-11-18**: 64/64 answers,
+  1.2 s wall (19 ms/q), payload 19,732 B, no missing answers. Design: 4 probe
+  feelings × 16 identical copies so the *same* instruction could be compared early
+  vs late in the batch. **No positional decay** (deltas mixed-sign, small). What the
+  run did expose is **intra-call variance**: sadness 1.8–13.6 (CV 51%), joy 6.9–19.3
+  (CV 30%), frustration 18.2–39.4 (CV 20%), trust 36.0–51.5 (CV 8%) — i.e. a single
+  score is a noisy draw, worst in relative terms for low-magnitude feelings. Batch
+  size is not the risk; single-sample noise is (hence EMA).
 - [ ] Whether `state` as an object/array changes interpretation vs. a string.
 - [ ] Heater wiring into `gauges.py` — **DONE 2026-11-16**, see `heater.md`.
