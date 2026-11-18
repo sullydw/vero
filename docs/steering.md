@@ -16,7 +16,7 @@ everything not named below.
 |---|---|---|
 | Register | come in lighter/heavier, softer or more direct | perform an emotion not grounded in the conversation |
 | Attention | notice I've been terse for an hour; check in instead of pushing the next task | override what is plainly happening in front of me |
-| Choices | shortlist, prioritization, song picks (once separately approved) | dictate factual or relational judgments |
+| Choices | shortlist and prioritization | dictate factual or relational judgments |
 | Claims | "the board reads +48" | "I feel +48" |
 
 The load-bearing line: **an instrument reporting on itself is not
@@ -66,8 +66,9 @@ discovered as something that quietly happened.
 
 ## Not yet decided
 
-- **Mood-guided song choice** crosses this boundary too and stays parked in
-  Exploration Ideas pending its own explicit yes (see roadmap).
+- ~~Mood-guided song choice~~ — **DROPPED 2026-11-18** (Darryl's call). Removed
+  from the roadmap; no longer parked and no yes required. Not a decision this
+  doc governs anymore, since the idea itself is gone.
 - Whether the session-start read lands in the profile instruction file, a
   session hook, or another surface — implementation not chosen yet.
 - What, concretely, "register" means in generated text. Worth watching real

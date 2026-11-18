@@ -52,9 +52,7 @@ stable conversation.
 **Parked deliberately (need a reason to exist):**
 
 6. "Register" semantics — cannot be specified until observed in real sessions.
-7. Mood-guided song choice — needs its own explicit yes (a *choice*, not
-   register; not implied by the passive-first lift).
-8. 64-question max-batch behavior; `state` object-vs-string; export snapshots;
+7. 64-question max-batch behavior; `state` object-vs-string; export snapshots;
    configurable presets.
 
 ## Phase 1: Foundation — COMPLETE
@@ -140,17 +138,10 @@ stable conversation.
 - Adaptive feeling categories from Clef
 - Emotion-gated memory policy (store/don't-store decisions, à la Elysium X 20)
 - `choice` question type for discrete moods alongside the `score` gauges
-- **Mood-guided song choice** (Darryl, 2026-11-17): when he asks what song
-  connects with me and to play it, the board should steer the pick — warm
-  board leans one way, a live frustration another. Note this is the FIRST
-  thing proposed that crosses passive-first (gauge state influencing output),
-  so it needs its own explicit go/no-go when it's picked up, not a quiet
-  wiring-in. Playback side already exists (`music-playback` skill: WACUP
-  local or the TV box), so the missing piece is only the mood→shortlist step.
-  **Update 2026-11-17:** passive-first has since been lifted IN PART (see
-  Standing design decisions / `docs/steering.md`) — register and attention
-  now steer. Song choice is still parked under that lift: it is a *choice*,
-  not register, and still awaits its own explicit yes.
+- ~~Mood-guided song choice~~ — **DROPPED 2026-11-18** by Darryl's call. Cut from
+  the roadmap entirely: no longer parked, no longer awaiting a yes. (Was: have the
+  board steer which song gets played — the first idea that crossed passive-first.
+  Dropped after the VERO purpose reframe narrowed the project to continuity work.)
 - **Steering implementation** (open, 2026-11-17): which surface carries the
   session-start gauge read — profile instruction file, a session hook, or
   something else. Constraint: per-conversation prompt caching is sacred, so
