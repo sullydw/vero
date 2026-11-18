@@ -118,7 +118,7 @@ exactly once per compaction rather than on every turn that still contains it.
 - [x] Validation with test conversations (probe runs: synthetic packet + live packet;
       `probe` subcommand is the read-only test harness)
 
-## Phase 3: Polish — IN PROGRESS
+## Phase 3: Polish — COMPLETE
 
 - [x] Smoothing and noise reduction (EMA, alpha = 0.6 — landed in v0)
 - [x] **Configurable presets** — `init --preset <name>` / `preset <name>` /
@@ -209,9 +209,12 @@ Absence costs nothing: `watch` never calls the API.
 - [x] ~~GAIN watch~~ — **superseded**: saturation root-caused by simulation (additive
       equilibrium pinned every gauge at 100); fixed with target-seeking model 2026-11-16
       (see heater.md). Bounded at strength×GAIN by construction; GAIN still the tuning dial.
-- [ ] Whether target-seeking GAIN (0.8) gives the *feel* Darryl wants after real-world
-      watching — saturation is solved, taste is not. `analyze.py --stats` is the
-      measuring tool for this (mean/max per feeling vs. the bound).
+- [x] ~~Whether target-seeking GAIN gives the *feel* Darryl wants~~ — **DELIVERED
+      2026-11-18**: he chose **1.0** (gauge reads the classifier's number), decided
+      against a replay of all 6 recorded ticks at 0.6/0.8/1.0/1.2, validated at worst
+      error 0.009°. Preset measurement later showed GAIN is a dial *offset*, not a
+      tracking parameter: `damped` (gain .6) tracks identically to default
+      (12/32/53/86% of equilibrium) — `tau_scale`/`ema_alpha` are what move tracking.
 - [x] ~~64-question max-batch behavior~~ — **ANSWERED 2026-11-18** by real call at
       the documented ceiling: **64/64 answered, 1.2 s total (19 ms/question)**, no
       missing answers, no positional degradation (first-8 vs last-8 deltas mixed
@@ -221,7 +224,11 @@ Absence costs nothing: `watch` never calls the API.
       (CV 20%), trust 36.0–51.5 (CV 8%). A single Clef score is a noisy sample —
       EMA smoothing is load-bearing, and one tick's number should never be over-read.
 - [ ] Does `state` as an object/array change interpretation vs. a plain string?
-- [ ] Cadence defaults confirmation (`--min-interval 60` stands meanwhile)
+- [x] ~~Cadence defaults confirmation~~ — **DECIDED 2026-11-18: tick on events, not
+      on a clock.** Measured: every tick is one uncached `POST /v1/systemone` scoring
+      all 14 content feelings against `clef:27b` (no cache, dedup or packet-hash in the
+      file); `tick` is CLI-only, so 60 s is a floor rather than a schedule. Full
+      reasoning under *Design constraints* above.
 - [x] ~~Possible one-`noul` valence summary dial per tick~~ — **superseded** by the
       affect dial (§4.25 split by valence gives a signed number; see Phase 3 and
       `docs/affect-dial.md`)

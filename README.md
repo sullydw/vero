@@ -42,7 +42,8 @@ machine
 - [x] Analysis — `analyze.py` answers plain-language questions over the history
       (`docs/analysis.md`)
 - [x] Overall affect dial — VA §4.25 split by valence, signed net (`docs/affect-dial.md`)
-- [ ] Packaging for other PCs (portable Python pkg + PyInstaller exe — planned, not built)
+- [x] Packaging for other PCs (portable Python pkg + PyInstaller exe — built
+      2026-11-18; both exes verified on a virgin box with no Python)
 
 **Design stance:** *passive first, lifted in part (2026-11-17).* Gauge state may
 steer Vera's **register and attention** — never her **claims** — and never
