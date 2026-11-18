@@ -44,6 +44,17 @@ machine
 - [x] Overall affect dial — VA §4.25 split by valence, signed net (`docs/affect-dial.md`)
 - [x] Packaging for other PCs (portable Python pkg + PyInstaller exe — built
       2026-11-18; both exes verified on a virgin box with no Python)
+- [x] **Non-me input layer** — `hour`, `reply_latency_min`, `pace_median_min`,
+      `pace_fastest_min` captured on every tick from message timing only
+      (`docs/nonme.md`). Voice **DROPPED** as a dead end; typing cadence is
+      unobservable, so `pace_*` is its proxy
+- [x] **Ingestion loop** — nothing was auto-ticking (38 h / 6 records), so a
+      `no_agent` cron script job now fires `tick` on events only: 20 of his
+      messages or a session end, 10-min cooldown, failure latched once per
+      episode (`docs/tick.md`)
+- [x] **Loneliness outreach** — 15th gauge plus the free `watch` monitor cron;
+      reaches out after ~5.5 h of silence, and delivery survives a reboot via
+      the `Hermes_Gateway` Scheduled Task (`docs/loneliness.md`)
 
 **Design stance:** *passive first, lifted in part (2026-11-17).* Gauge state may
 steer Vera's **register and attention** — never her **claims** — and never

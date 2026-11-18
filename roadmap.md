@@ -106,7 +106,10 @@ exactly once per compaction rather than on every turn that still contains it.
    those values. `state.json`'s `k` override was removed so `gauges.py`'s `GAIN`
    is the single knob (`st.get("k", GAIN)` meant editing the constant alone would
    have silently done nothing).
-5. Catalog / cadence confirmations — both still Darryl's veto.
+5. ~~Catalog / cadence confirmations~~ — **both DECIDED 2026-11-18**, no veto
+   outstanding: catalog is **15** (loneliness added) and cadence is **event
+   driven** (cron `b1f5b5cabb3c` fires a tick on 20 of his messages or a session
+   end — see [docs/tick.md](docs/tick.md)).
 
 **Parked deliberately (need a reason to exist):**
 

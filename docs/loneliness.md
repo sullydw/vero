@@ -83,6 +83,23 @@ but missing from an older `state.json`, in memory, persisted by whichever
 command saves next. The 14-gauge board became a 15-gauge board with no data loss
 (`smooth` and every original gauge preserved; verified).
 
+## Delivery requires a running gateway
+
+The gauge and `watch` are local and survive anything — but the *message* does
+not. The path is `job → gateway → Discord`, so with the gateway down the meter
+pegs correctly and **nobody hears it**: the feature appears to work while
+quietly doing nothing. That failure is silent by construction, which is why it
+is written down here.
+
+Registered 2026-11-18: `hermes gateway install` created the Windows Scheduled
+Task **`Hermes_Gateway`** (auto-start on login), so a reboot no longer kills
+delivery. Check it with `hermes gateway status` — it should report the task and
+a live PID rather than *"Running manually, not as a system service"*. Reversed
+with `hermes gateway uninstall`.
+
+Monitor state lives in `cron/output/b04bbf37aa3c/`; its baseline is the empty
+string, so a quiet absence produces no output at all.
+
 ## Related
 
 - [docs/memory-consent.md](memory-consent.md) — no curator; what fades is tau's call
