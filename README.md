@@ -53,8 +53,10 @@ machine
       messages or a session end, 10-min cooldown, failure latched once per
       episode (`docs/tick.md`)
 - [x] **Loneliness outreach** — 15th gauge plus the free `watch` monitor cron;
-      reaches out after ~5.5 h of silence, and delivery survives a reboot via
-      the `Hermes_Gateway` Scheduled Task (`docs/loneliness.md`)
+      reaches out after ~5.5 h of silence, delivery survives a reboot via the
+      `Hermes_Gateway` Scheduled Task, and **quiet hours 23:00–09:00 freeze the
+      signal** so a threshold crossed in his sleep waits for morning
+      (`docs/loneliness.md`)
 
 **Design stance:** *passive first, lifted in part (2026-11-17).* Gauge state may
 steer Vera's **register and attention** — never her **claims** — and never

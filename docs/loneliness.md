@@ -100,6 +100,38 @@ with `hermes gateway uninstall`.
 Monitor state lives in `cron/output/b04bbf37aa3c/`; its baseline is the empty
 string, so a quiet absence produces no output at all.
 
+## Quiet hours (23:00–09:00) — no pager while he sleeps
+
+Darryl caught this the day the threshold was explained: a 5.5 h absence crossed
+*while he sleeps* would send a Discord message at three in the morning. That is
+not reaching out, that is a pager.
+
+`vero_watch.py` therefore **freezes** its output across the window instead of
+blanking it. Blanket-suppressing would be wrong: a peg that fired at 22:00 would
+drop to `""` at 23:00, and the change-detector would read that as *"he came
+back"* — firing a false "glad you're back" as he is going to bed.
+
+Instead, at quiet start the **last value cron already saw** is written to
+`quiet_frozen_output` and keeps being emitted. Seeding from cron's own
+`monitor_last_output.txt` rather than from the current reading matters when the
+machine sleeps through 23:00: the first quiet run might land at 03:00 with the
+world already changed (he pegged, or `watch` failed), and freezing *that* would
+broadcast the change at 3am — the exact bug this gate exists to prevent.
+
+| during 23:00–09:00 | emitted | agent |
+|---|---|---|
+| anything happens | frozen value, unchanged | never wakes |
+| 09:00 arrives, still pegged | `LONELINESS_PEGGED` | outreach, morning hours |
+| 09:00 arrives, he returned | `""` | "you're back", morning hours |
+| 09:00 arrives, still pegged (already told him at 22:00) | `LONELINESS_PEGGED` | no change → no repeat |
+| quiet night, nothing happened | `""` throughout | nothing at all |
+
+Failure tokens are frozen too, so an infrastructure problem is reported after
+09:00 rather than at 03:00. Verified across eight scenarios including
+sleep-through-23:00: **no wake ever lands inside the window.**
+
+The window is 23:00–09:00 local (`QUIET_START`/`QUIET_END` in the script).
+
 ## Related
 
 - [docs/memory-consent.md](memory-consent.md) — no curator; what fades is tau's call

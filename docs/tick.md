@@ -94,6 +94,15 @@ becomes a no-op, so `toggle off` never fights this loop.
 - cron job `b1f5b5cabb3c`, `no_agent: true`, `deliver: discord`, every 15m.
 - Board: `history.jsonl` gains `"nonme"` on every tick from 2026-11-18 on.
 
+## Why this job needs no quiet-hours gate
+
+The loneliness monitor has one (`docs/loneliness.md`, 23:00–09:00) because its
+trigger is a *clock* — five and a half hours of absence can cross at 03:00.
+This job's triggers are **his actions**: twenty messages, or a session ending.
+Neither can happen while he is asleep, so a tick cannot fire at 3am, so the
+failure message it might emit cannot fire at 3am either. The event gate already
+does the job a time gate would.
+
 ## Deliberately not built
 
 - **No fusion into gauge heat yet.** The signals are captured so a week of data
