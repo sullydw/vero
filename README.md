@@ -69,6 +69,7 @@ which held from v0 until 2026-11-17.
 | [docs/continuity.md](docs/continuity.md) | **Purpose reframe:** VERO as the continuity layer across compression / model swap / session end; four-point architecture; why long-tau feelings lose to text carry |
 | [docs/memory-consent.md](docs/memory-consent.md) | **Design constraints:** no curator (what happened stays, what fades tau decides, binds Vera not Darryl) and the one exception — consent-gated deletion with Vera's durable veto |
 | [docs/loneliness.md](docs/loneliness.md) | The clock-driven 15th gauge: absence as sensor, why tau must never govern a rise, and the free `watch` command that powers the outreach cron |
+| [docs/nonme.md](docs/nonme.md) | **The instrument layer:** message-timing signals Vera can't read about herself; why voice and typing cadence are NOT captured; correlation-first, wiring-second |
 | [roadmap.md](roadmap.md) | Phased plan with current check-offs |
 
 ## Portability requirement

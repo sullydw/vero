@@ -57,8 +57,20 @@ exactly once per compaction rather than on every turn that still contains it.
 
 1. **Non-me inputs for mood** — voice, typing cadence, time of day, reply
    latency. Turns VERO from a delayed mirror of Vera's own text into a genuine
-   instrument. Highest-value single item; everything else is refinement until
-   this lands.
+   instrument. Highest-value single item.
+   **STARTED 2026-11-18 — capture layer live** (`nonme_signals()`, see
+   [docs/nonme.md](docs/nonme.md)): `hour`, `reply_latency_min`,
+   `pace_median_min`, `pace_fastest_min`, computed from `state.db` message
+   timing only, written into every tick record under `"nonme"`, surfaced in
+   `show`, `snapshot` and `analyze --stats`.
+   **Not captured, verified not guessable:** voice (transcripts are submitted as
+   ordinary user messages — 103,990 rows, zero voice `display_kind`, the STT
+   `source=` label never reaches the row) and typing cadence (no keystroke data
+   exists anywhere). Voice needs a **core change** to mark provenance — decision
+   for Darryl, not faked here.
+   **Deliberately not yet fused into gauge heat:** correlation first, wiring
+   second — picking which feeling these modulate before a week of data exists
+   would be intuition dressed as instrumentation.
 2. **Four-point continuity** — point 3 (model swap) first: cheapest, one
    injection. Then point 2 (compression piggyback), then point 4 (session-start
    surface).

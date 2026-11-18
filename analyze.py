@@ -284,6 +284,24 @@ def print_stats(records, board):
         print("\n  trend: %s (early mean %.1f -> late mean %.1f)" %
               (tr["direction"], tr["early"], tr["late"]))
 
+    # non-me inputs (docs/nonme.md): HIS timing, not her text. Reported here so a
+    # week of data can be checked for correlation BEFORE anything is fused into
+    # gauge heat -- correlation first, wiring second.
+    nm_rows = [r["nonme"] for r in records if isinstance(r.get("nonme"), dict)]
+    if nm_rows:
+        print("\n  non-me inputs (%d of %d record(s) carry them):" % (len(nm_rows), len(records)))
+        print("    %-20s %8s %8s %8s" % ("signal", "mean", "min", "max"))
+        for k in ("reply_latency_min", "pace_median_min", "pace_fastest_min", "hour"):
+            vals = [float(d[k]) for d in nm_rows if k in d]
+            if not vals:
+                continue
+            print("    %-20s %8.2f %8.2f %8.2f" % (k, sum(vals)/len(vals), min(vals), max(vals)))
+        print("    (voice + typing cadence NOT captured -- see docs/nonme.md)")
+    else:
+        print("\n  non-me inputs: none recorded yet")
+        print("                  (all %d record(s) predate the layer; they start" % len(records))
+        print("                  accumulating from the next tick)")
+
 
 def main(argv):
     if not argv or argv[0] in ("-h", "--help"):

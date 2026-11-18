@@ -222,6 +222,54 @@ def overall_affect(gauges_T):
     return {"pos": pos, "neg": neg, "net": pos - neg}
 
 
+
+def nonme_signals(now=None):
+    """NON-ME INPUTS: things Vera cannot read about herself (VERO docs/nonme.md).
+
+    Sourced ONLY from the canonical store's message timing -- no classifier, no
+    model call, no new infrastructure, no write to state. This is the layer that
+    turns VERO from a delayed mirror of Vera's own text into an instrument.
+
+    Deliberately NOT here, and why:
+      voice          transcripts are submitted as ordinary user messages with no
+                     provenance marker (verified: 103,990 messages, zero voice
+                     display_kind) -- the STT source= label never reaches the
+                     message row. Needs a core change to mark it; do not fake it.
+      typing cadence no keystroke/inter-key data exists anywhere in the store.
+
+    These are CAPTURED, not yet fused into gauge heat. Fusing before a week of
+    recorded data would mean picking correlations out of intuition -- exactly the
+    invention this layer exists to avoid.
+    """
+    now = time.time() if now is None else now
+    out = {"hour": int(time.localtime(now).tm_hour)}
+    db = BASE / "state.db"
+    if not db.exists():
+        return out
+    try:
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            rows = [float(r[0]) for r in con.execute(
+                "SELECT timestamp FROM messages WHERE role='user' "
+                "AND timestamp IS NOT NULL ORDER BY timestamp DESC LIMIT 40")]
+        finally:
+            con.close()
+    except Exception:
+        return out
+    if not rows:
+        return out
+    rows.sort(reverse=True)
+    # reply latency: how long since HE spoke. Distinct from gap_minutes (since
+    # EITHER of us) -- during a long turn of mine this keeps climbing.
+    out["reply_latency_min"] = round(max(0.0, (now - rows[0]) / 60.0), 2)
+    gaps = [(rows[i] - rows[i + 1]) / 60.0 for i in range(min(len(rows) - 1, 20))]
+    if gaps:
+        s = sorted(gaps)
+        out["pace_median_min"] = round(s[len(s) // 2], 2)
+        out["pace_fastest_min"] = round(min(gaps), 2)
+    return out
+
+
 # ----------------------------------------------------- clock-driven gauges ---
 def ensure_catalog(st):
     """Add gauges in CATALOG that an older state file predates.
@@ -633,6 +681,9 @@ def cmd_tick(min_interval=60, force=False):
         # nullable so a failure to compute never blocks the history append
         "affect": {k: round(float(v), 1)
                    for k, v in overall_affect(T_now).items()},
+        # non-me inputs: captured from message timing only (docs/nonme.md).
+        # Absent keys simply mean the signal was unavailable that tick.
+        "nonme": nonme_signals(now),
     })
 
     log("tick ok -- clef said:")
@@ -866,6 +917,11 @@ def cmd_show():
         f"net {aff['net']:+6.1f}   (§4.25 per valence pool, surprise excluded)")
     log(f"  preset: {preset_summary(st)}")
     log(f"  gap since last interaction: {int(gap_now)} min")
+    _nm = nonme_signals(now)
+    if len(_nm) > 1:
+        log("  non-me (his timing, not my text): "
+            + "  ".join(f"{k}={v}" for k, v in _nm.items() if k != "hour")
+            + f"  hour={_nm['hour']:02d}")
     log("")
     for name, T, tau in rows:
         filled = int(round(T / 5.0))
@@ -936,6 +992,7 @@ def cmd_snapshot(out_path=None, note=None):
         "enabled": bool(st.get("enabled", True)),
         "cooldown_min_since_write": int(dt_min),
         "gap_since_interaction_min": int(gap),
+        "nonme": nonme_signals(now),
         "gain": float(st.get("k", GAIN)),
         "affect": {k: round(float(v), 1) for k, v in aff.items()},
         "gauges": rows,
