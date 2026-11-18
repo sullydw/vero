@@ -65,9 +65,12 @@ exactly once per compaction rather than on every turn that still contains it.
 
 **Finish what is already open:**
 
-3. Packaging for another PC — portable pkg groundwork DONE (Phase 3 below);
-   PyInstaller exe **blocked on Darryl's install approval**, Python 3.14 wheel
-   availability an open risk.
+3. Packaging for another PC — **DONE 2026-11-18.** `gauges.exe` and
+   `analyze.exe` built one-file with PyInstaller 6.22.3 (~10.6 MB each) and
+   verified on a virgin directory with no Python: `init` → `show` →
+   `toggle off/on` → `analyze --stats`, state written beside the exe, missing
+   board degrades to `state missing -- run: gauges.exe init` with no traceback.
+   The Python 3.14 wheel risk did not materialise — no 3.10 fallback needed.
 4. GAIN taste verdict — `analyze.py --stats` is the measuring tool.
 5. Catalog / cadence confirmations — both still Darryl's veto.
 
@@ -116,16 +119,22 @@ exactly once per compaction rather than on every turn that still contains it.
       `docs/affect-dial.md` for the saturation table).
 - [ ] Export/share gauge snapshots
 - [x] Documentation and examples (this repo's `docs/` — ongoing as we go)
-- [ ] **Packaging for another PC** (portable Python pkg + PyInstaller build) —
-      hard requirement per Darryl; see README portability section.
-      **Portable pkg groundwork DONE 2026-11-17:** `DIR` (board files) split
-      from `BASE` (Hermes home) so state travels with a frozen exe —
-      precedence `VERO_HOME` > beside-frozen-exe > `<hermes home>/feeling-gauges`.
-      `.env` now read beside the board first, then Hermes home. Verified all
-      three modes + a simulated no-Hermes box degrading the context packet to
-      a clock-only line instead of crashing. **PyInstaller build still blocked
-      on Darryl's install approval; Python 3.14 wheel availability is an open
-      risk (fallback: build under 3.10).**
+- [x] **Packaging for another PC** (portable Python pkg + PyInstaller build) —
+      hard requirement per Darryl. **COMPLETE 2026-11-18.**
+      Source now lives in this repo (`gauges.py`, `analyze.py`) — it previously
+      existed only as loose files in `$HERMES_HOME/feeling-gauges/`, protected
+      solely by `.bak` copies in that same directory, which failed the "code and
+      docs in the repo" requirement. Both exes built one-file with PyInstaller
+      6.22.3 and verified on a virgin directory: `init` → `show` →
+      `toggle off/on` → `analyze --stats`, state written beside the exe.
+      Two fixes shipped with it: stdout is now pinned to UTF-8 (a frozen build
+      ignored `PYTHONUTF8`/`PYTHONIOENCODING` while the script honoured them, so
+      `§` rendered differently depending on launch path — script and exe output
+      is now byte-identical), and the missing-board hint names `gauges.exe init`
+      when frozen instead of `gauges.py init`.
+      `.env` is read beside the board first, then Hermes home; path precedence
+      `VERO_HOME` > beside-frozen-exe > `<hermes home>/feeling-gauges`.
+      Runtime data, backups and binaries are gitignored.
 
 ## Open questions / next investigations
 

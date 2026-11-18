@@ -21,10 +21,12 @@ carries *as text* inside a session, and text loses the long-tau feelings first
 in her stack carries affect across those breaks. Full rationale:
 [docs/continuity.md](docs/continuity.md).
 
-## Status (2026-11-17)
+## Status (2026-11-18)
 
-**v0 core, heater, history, dashboard, analysis and affect dial are all
-working.** The board runs on this machine
+**v0 core, heater, history, dashboard, analysis, affect dial and portable
+packaging are all working.** The continuity layer (compression, model swap,
+session start) ships as the `vero-steering` plugin. The board runs on this
+machine
 (`$HERMES_HOME/feeling-gauges/gauges.py`, stdlib-only Python).
 
 - [x] Context packet collection (last N exchanges from the conversation store + clock)
@@ -68,11 +70,23 @@ which held from v0 until 2026-11-17.
 
 ## Portability requirement
 
-VERO must be installable on another PC. Planned shape: zero-dependency Python
-package (stdlib only) with state as plain JSON, plus a PyInstaller one-file
-build for machines without Python. The Clef analyzer is cloud-hosted
-(`https://ollama.com/v1/systemone` + `OLLAMA_API_KEY`), so no local model
-is needed on the target machine.
+VERO must be installable on another PC. **Delivered 2026-11-18** — the package
+ships both paths, so the target machine needs no matching toolchain:
+
+    with Python:     python gauges.py init && python gauges.py show
+    without Python:  gauges.exe init      && gauges.exe show
+
+Both exes are one-file PyInstaller builds (stdlib only, no installer), and
+state is written to `./feeling-gauges/` **beside the executable** — so the
+folder is the whole package and copying it preserves its own history.
+Precedence: `VERO_HOME` → beside a frozen exe → Hermes home. `.env` is read
+beside the board first, then Hermes home.
+
+The Clef analyzer is cloud-hosted (`https://ollama.com/v1/systemone` +
+`OLLAMA_API_KEY`), so no local model is needed on the target machine; without a
+key, `--stats` still works and a narrated question degrades instead of crashing.
+
+Build and the full command list: see `README-PORTABLE.md` in the package.
 
 ## External research
 

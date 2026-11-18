@@ -1,0 +1,22 @@
+# Runtime data and generated artifacts — never version these.
+feeling-gauges/
+state.json
+history.jsonl
+dashboard.html
+steering_state.json
+.env
+
+# Backups are flat files in the same folder as the board; they are history, git is better.
+*.bak
+*.bak-*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Build artifacts (rebuild with: python -m PyInstaller --onefile gauges.py)
+build/
+dist/
+*.spec
+*.exe
