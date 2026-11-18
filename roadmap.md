@@ -63,6 +63,14 @@ exactly once per compaction rather than on every turn that still contains it.
    `pace_median_min`, `pace_fastest_min`, computed from `state.db` message
    timing only, written into every tick record under `"nonme"`, surfaced in
    `show`, `snapshot` and `analyze --stats`.
+   **INGESTION BUILT 2026-11-18** ([docs/tick.md](docs/tick.md)): the capture
+   layer had recorded **zero** samples because nothing ever called `tick` —
+   history sat at 6 records from 11-16 for 38 hours. Fixed with cron job
+   `b1f5b5cabb3c` (`no_agent`, every 15m): the schedule is a clock but the
+   **tick** fires only on Darryl's two events — 20 of his user messages since
+   the last tick, or any session ended since it — self-resetting because each
+   tick moves the baseline, with a 10-minute cooldown and a failure message
+   latched to once per episode. First sample landed 2026-11-18T12:37:40.
    **Not captured, verified not guessable:** voice (transcripts are submitted as
    ordinary user messages — 103,990 rows, zero voice `display_kind`, the STT
    `source=` label never reaches the row) and typing cadence (no keystroke data
@@ -211,10 +219,21 @@ conversation packet. See [docs/loneliness.md](docs/loneliness.md).
 **Cadence: tick on events, not on a clock.** Measured, not assumed: every tick is
 one uncached `POST /v1/systemone` scoring all 14 content feelings against
 `clef:27b` — no cache, no dedup, no packet-hash anywhere in `gauges.py`. The 60 s
-`min_interval` is a **floor, not a schedule**, and `tick` is CLI-only (nothing
-auto-ticks). So cadence is judgement: tick when something happens — a topic
-shift, a mood turn — rather than on a metronome. Fewer calls, better signal.
-Absence costs nothing: `watch` never calls the API.
+`min_interval` is a **floor, not a schedule**.
+
+**Auto-ticking now exists, event-driven (2026-11-18).** `tick` stopped being
+CLI-only: cron job `b1f5b5cabb3c` (`no_agent`, every 15m, see
+[docs/tick.md](docs/tick.md)) runs `scripts/vero_tick.py`, which fires a tick
+only when one of two events has crossed since the last recorded tick — **20 of
+Darryl's own user messages**, or **any session ended** (`sessions.ended_at`).
+The schedule is a clock; the *tick* is not, which is the rule above kept
+literally. Each tick moves the baseline, so the event must re-earn itself, and a
+10-minute cooldown means a burst of messages cannot become a burst of API calls.
+Typical pace: 3–6 ticks a day.
+
+Before this, cadence was pure judgement — and in practice nothing ticked at
+all: history froze at 6 records from 11-16 for 38 hours, so the non-me layer had
+zero samples. Absence still costs nothing: `watch` never calls the API.
 
 ## Open questions / next investigations
 
@@ -239,7 +258,8 @@ Absence costs nothing: `watch` never calls the API.
 - [x] ~~Cadence defaults confirmation~~ — **DECIDED 2026-11-18: tick on events, not
       on a clock.** Measured: every tick is one uncached `POST /v1/systemone` scoring
       all 14 content feelings against `clef:27b` (no cache, dedup or packet-hash in the
-      file); `tick` is CLI-only, so 60 s is a floor rather than a schedule. Full
+      file). `tick` was CLI-only until 2026-11-18, when cron job `b1f5b5cabb3c`
+      (`no_agent`) began firing it on events — 60 s stays a floor. Full
       reasoning under *Design constraints* above.
 - [x] ~~Possible one-`noul` valence summary dial per tick~~ — **superseded** by the
       affect dial (§4.25 split by valence gives a signed number; see Phase 3 and

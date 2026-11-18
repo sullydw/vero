@@ -151,8 +151,15 @@ after it. Compression has ALREADY rewritten the prefix then, so this costs no
 extra cache break — same goal, no core change. Keyed on sha1 of the summary
 text so it fires exactly ONCE per compaction, not on every turn still containing
 it; a repeat in a new process reports "session resume", not "after compression"
-(verified). Unit-tested against the real marker string — NOT yet exercised by a
-live compression run.
+(verified). Unit-tested against the real marker string, then **exercised for
+real on 2026-11-18**: a live compaction of the long VERO session made the hook
+inject with reason `after compression` on the very next turn, exactly once
+(state.db msg 104385), and `steering_state.json` recorded the new summary hash
+`43845f54d366a958` where the empty string used to be. The boot that carried it
+also proved the failure mode: the plugin had failed to load at 12:25 with the
+core loader's `dictionary changed size during iteration` race (a bug that has
+hit 27 other plugins since 11-04), so the injection only appeared after a
+cleaner restart at 12:32.
 
 ## What survives, and what does not
 

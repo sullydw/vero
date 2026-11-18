@@ -89,3 +89,5 @@ survives the data, fuse it; if not, the absence of one is itself a result.
 - [continuity.md](continuity.md) — the instrument-vs-mirror argument in full
 - [loneliness.md](loneliness.md) — the first non-me input (absence as sensor)
 - [history.md](history.md) — record shape and why local JSONL
+- [tick.md](tick.md) — what actually RUNS a tick (the ingestion loop that gave
+  these signals a first sample on 2026-11-18)
