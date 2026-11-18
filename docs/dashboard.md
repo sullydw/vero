@@ -12,7 +12,7 @@ writes `dashboard.html` beside `state.json`.
 - **Read-only w.r.t. state**: reads `state.json` + `history.jsonl`, writes one
   html file. Running it never mutates the board (hash-verified).
 - **Two cards:**
-  1. *Current board* — 14 gauges sorted by temperature, colored bars
+  1. *Current board* — 15 gauges sorted by temperature, colored bars
      (cool < 20 ≤ warm < 50 ≤ hot), value + τ per row, computed with lazy
      decay applied (same math as `show`), plus ON/OFF badge and record count.
   2. *History* — per-feeling SVG sparkline of T over the last 200 ticks.

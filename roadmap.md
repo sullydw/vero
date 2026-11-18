@@ -244,5 +244,6 @@ Absence costs nothing: `watch` never calls the API.
   without a fresh decision from Darryl. Claims, choices and overrides remain out.
 - **Kill switch mandatory** and built.
 - **Parse-before-mutate:** a failed heater call must leave `state.json` untouched.
-- Catalog: 14 feelings (Plutchik's 8 + affection, nostalgia, contentment,
-  frustration, guilt, pride).
+- Catalog: 15 feelings (Plutchik's 8 + affection, nostalgia, contentment,
+  frustration, guilt, pride — plus **loneliness**, the clock-driven one added
+  2026-11-18; see `docs/loneliness.md`).

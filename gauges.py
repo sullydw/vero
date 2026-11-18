@@ -197,8 +197,8 @@ def combine_remaining(strengths):
       60+30 -> 72,  40+20 -> 52,  60+40+20 -> 80.8,  10+10 -> 19
     inputs 0..100, returns 0..100.
 
-    NOT applied to all 14 gauges at once: over 14 terms it saturates
-    (1-(1-s)^14 = 95.6 when every gauge is only 20) and counts fear/anger as
+    NOT applied to all 15 gauges at once: over 15 terms it saturates
+    (1-(1-s)^15 = 96.5 when every gauge is only 20) and counts fear/anger as
     'affect'. See docs/affect-dial.md for the numbers behind the split.
     """
     v = 0.0

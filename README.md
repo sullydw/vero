@@ -31,7 +31,7 @@ machine
 
 - [x] Context packet collection (last N exchanges from the conversation store + clock)
 - [x] Clef integration — via the validated `/v1/systemone` batch endpoint
-- [x] Decay engine with per-feeling tau (14 feelings, tau table in `gauges.py`)
+- [x] Decay engine with per-feeling tau (15 feelings, tau table in `gauges.py`)
 - [x] CLI gauge display with bars (`show`)
 - [x] Kill switch (`toggle off` freezes heat *and* cooling) + 60 s call throttle
 - [x] First real heating done; throttle/kill-switch regressions re-verified
