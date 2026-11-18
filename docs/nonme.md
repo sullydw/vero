@@ -32,16 +32,35 @@ max 42.7 minutes.
 
 ## What is NOT captured, and why
 
-**Voice — cannot be instrumented honestly today.** `transcribe_audio(...,
-source="voice_mode")` passes a label to the *STT call*, but the transcript is then
-submitted as an ordinary user message with **no provenance marker**. Verified:
-103,990 messages, zero with a voice `display_kind`; the only metadata keys that
-exist are `display_text`, `notification_category`, `gateway_input_owner`. So a
-voice message and a typed message are indistinguishable in the store.
+**Voice — blocked on TWO independent facts, both verified 2026-11-18.**
 
-Making this wireable needs a **core change** — mark the message at submit time —
-which is out of scope for VERO (live-source rule: don't edit core from here).
-Filed as a decision for Darryl, not faked.
+1. *Provenance.* `transcribe_audio(..., source="voice_mode")` passes a label to
+   the **STT call only**; it never reaches the message row. Verified:
+   103,990 messages, zero with a voice `display_kind`; the only metadata keys in
+   the whole store are `display_text`, `notification_category`,
+   `gateway_input_owner`. Spoken and typed messages are byte-identical.
+2. *Prosody.* The recording itself is **deleted the moment transcription
+   succeeds** — `cli_voice_mixin.py:253` runs `os.unlink(wav_path)` on the
+   non-failure branch; the file is preserved **only** if STT failed (line 247,
+   "keep the source recording so long dictation is not lost"). So pitch, energy,
+   speech rate and hesitation are gone before anything could read them. A disk
+   sweep found 101 audio files, but they are all *synthesis* output
+   (`tts_*.wav`, `voicedesign_*.wav`, `tmp*.wav`) — no dictation recordings.
+
+So voice would need a core change at **two** points, not one:
+
+- mark the message at submit time (provenance), **or**
+- **compute-then-discard**: extract a few scalars from the wav *before* the
+  existing unlink — mean pitch, pitch range, RMS energy, speech rate — store
+  those, keep deleting the audio.
+
+The second is the only version worth doing: it keeps the privacy property that
+the unlink already provides (no spoken utterance ever persists) while yielding
+the one signal text genuinely cannot carry — **how he actually sounded.** A bare
+"is_voice" boolean would add almost nothing on its own.
+
+Both are out of scope for VERO (live-source rule: don't edit Hermes core from
+here). Filed as a decision for Darryl, not faked.
 
 **Typing cadence — no data exists.** There is no keystroke or inter-key timing
 anywhere in the stack. Message-level gaps are the closest available proxy, and
